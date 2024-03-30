@@ -123,6 +123,14 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   struct entrylist *entrylist[MAX_DIR];
   int count = 0;
 
+  for (int i = 0; i < MAX_DIR; i++) {
+    entrylist[i] = malloc(sizeof(struct entrylist));
+    if (entrylist[i] == NULL) {
+        perror("Failed to allocate memory.");
+        exit(EXIT_FAILURE);
+    }
+  }
+
   while((entry = getNext(dir)) != NULL) {
     strncpy(entrylist[count]->name, entry->d_name, sizeof(entrylist[count]->name));
     entrylist[count]->type = entry->d_type;
@@ -132,7 +140,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   qsort(entrylist, count, sizeof(struct dirent *), dirent_compare);
 
   for (int i=0; i<count; i++) {
-    if (entry->d_type == DT_DIR) {
+    if (entrylist[i]->type == DT_DIR) {
       stats->dirs += 1;
 
       printf("%*s%s\n", depth*2, "", entrylist[i]->name);
@@ -174,6 +182,11 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   */
 
   closedir(dir);
+
+  for (int i = 0; i < MAX_DIR; i++) {
+    free(entrylist[i]);
+}
+
 
 }
 
