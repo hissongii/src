@@ -115,16 +115,15 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   }
 
   struct dirent *entry;
-
-  printf("%s\n", dn);
   while ((entry = getNext(dir)) != NULL) {
-    switch (entry->d_type) {
-      case DT_DIR:
-        processDir(dn+"/"+entry->d_name, depth+1, *stats, flags);
-      default:
-        continue;
+    char fullPath[1024];
+    snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry->d_name);
+
+    if (entry->d_type == DT_DIR) {
+      processDir(fullPath, depth + 1, stats, flags);
+    } else {
+      printf("%s\n", entry->d_name);
     }
-    printf("%s\n", entry->d_name);
   }
 
   closedir(dir);
