@@ -100,10 +100,6 @@ static int dirent_compare(const void *a, const void *b)
 /// @param depth depth in directory tree
 /// @param stats pointer to statistics
 /// @param flags output control flags (F_*)
-struct entrylist {
-  char name[54];
-  unsigned char type;
-};
 
 void processDir(const char *dn, unsigned int depth, struct summary *stats, unsigned int flags)
 {
@@ -120,43 +116,39 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   }
 
   struct dirent *entry;
-  struct entrylist *entrylist[MAX_DIR];
+  struct dirent *entrylist[MAX_DIR];
   int count = 0;
 
-  for (int i = 0; i < MAX_DIR; i++) {
-    entrylist[i] = malloc(sizeof(struct entrylist));
-    if (entrylist[i] == NULL) {
+  while((entry = getNext(dir)) != NULL && count < MAX_DIR) {
+    entrylist[count] = malloc(sizeof(struct dirent));
+    if (entrylist[count] == NULL) {
         perror("Failed to allocate memory.");
         exit(EXIT_FAILURE);
     }
-  }
-
-  while((entry = getNext(dir)) != NULL) {
-    strncpy(entrylist[count]->name, entry->d_name, sizeof(entrylist[count]->name));
-    entrylist[count]->type = entry->d_type;
+    memcpy(entrylist[count], entry, sizeof(struct dirent));
     count += 1;
   }
 
-  qsort(entrylist, count, sizeof(struct entrylist *), dirent_compare);
+  qsort(entrylist, count, sizeof(struct dirent *), dirent_compare);
 
   for (int i=0; i<count; i++) {
-    if (entrylist[i]->type == DT_DIR) {
+    if (entrylist[i]->d_type == DT_DIR) {
       stats->dirs += 1;
 
-      printf("%*s%s\n", depth*2, "", entrylist[i]->name);
+      printf("%*s%s\n", depth*2, "", entrylist[i]->d_name);
 
       char fullpath[1024];
-      snprintf(fullpath, sizeof(fullpath), "%s/%s", dn, entrylist[i]->name);
+      snprintf(fullpath, sizeof(fullpath), "%s/%s", dn, entrylist[i]->d_name);
       processDir(fullpath, depth+1, stats, flags);
     
     } else {
 
-      if      (entrylist[i]->type == DT_REG) { stats->files += 1; }
-      else if (entrylist[i]->type == DT_LNK) { stats->links += 1; }
-      else if (entrylist[i]->type == DT_FIFO) { stats->fifos += 1; }
-      else if (entrylist[i]->type == DT_SOCK) { stats->socks += 1; }
+      if      (entrylist[i]->d_type == DT_REG) { stats->files += 1; }
+      else if (entrylist[i]->d_type == DT_LNK) { stats->links += 1; }
+      else if (entrylist[i]->d_type == DT_FIFO) { stats->fifos += 1; }
+      else if (entrylist[i]->d_type == DT_SOCK) { stats->socks += 1; }
 
-      printf("%*s%s\n", depth*2, "", entrylist[i]->name);
+      printf("%*s%s\n", depth*2, "", entrylist[i]->d_name);
     }
   }
 
@@ -183,7 +175,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
   closedir(dir);
 
-  for (int i = 0; i < MAX_DIR; i++) {
+  for (int i=0; i<MAX_DIR; i++) {
     free(entrylist[i]);
   }
 
