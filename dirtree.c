@@ -121,7 +121,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
     if (entry->d_type == DT_DIR) {
       stats->dirs += 1;
-      printf("%*s%s\n", depth, "  ", entry->d_name);
+      printf("%*s%s\n", depth*2, "", entry->d_name);
       processDir(fullPath, depth + 1, stats, flags);
     } else {
 
@@ -130,7 +130,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       else if (entry->d_type == DT_FIFO) { stats->fifos += 1; }
       else if (entry->d_type == DT_SOCK) { stats->socks += 1; }
 
-      printf("%*s%s\n", depth, "  ", entry->d_name);
+      printf("%*s%s\n", depth*2, "", entry->d_name);
     }
   }
 
