@@ -104,7 +104,7 @@ struct entrylist {
   char name[54];
   unsigned char type;
 };
-  struct entrylist *entrylist[MAX_DIR];
+
 void processDir(const char *dn, unsigned int depth, struct summary *stats, unsigned int flags)
 {
   // TODO
@@ -120,7 +120,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   }
 
   struct dirent *entry;
-
+  struct entrylist *entrylist[MAX_DIR];
   int count = 0;
 
   for (int i = 0; i < MAX_DIR; i++) {
@@ -137,7 +137,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     count += 1;
   }
 
-  qsort(entrylist, count, sizeof(struct dirent *), dirent_compare);
+  qsort(entrylist, count, sizeof(struct entrylist *), dirent_compare);
 
   for (int i=0; i<count; i++) {
     if (entrylist[i]->type == DT_DIR) {
@@ -183,13 +183,13 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
   closedir(dir);
 
+  for (int i = 0; i < MAX_DIR; i++) {
+    free(entrylist[i]);
+  }
 
 
 }
 
-  for (int i = 0; i < MAX_DIR; i++) {
-    free(entrylist[i]);
-  }
 
 /// @brief print program syntax and an optional error message. Aborts the program with EXIT_FAILURE
 ///
