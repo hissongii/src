@@ -115,8 +115,28 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     exit(EXIT_FAILURE);
   }
 
+  struct dirent **entrylist = malloc(MAX_DIR * sizeof(struct dirent *));
+  if (entrylist == NULL) {
+      perror("Failed to allocate memory.");
+      exit(EXIT_FAILURE);
+  }
   struct dirent *entry;
+  int count = 0;
 
+  while ((entry = getNext(dir)) != NULL && count < MAX_DIR) {
+    
+    struct dirent *entryCopy = malloc(sizeof(struct dirent));
+    if (entryCopy == NULL) {
+        perror("Failed to allocate memory for entryCopy");
+        exit(EXIT_FAILURE);
+    }
+    memcpy(entryCopy, entry, sizeof(struct dirent));
+    // strncpy(entryCopy->d_name, entry->d_name, 54);
+    // entryCopy->d_name[54] = '\0';
+    entrylist[count++] = entryCopy;
+  }
+  
+  /*
   while ((entry = getNext(dir)) != NULL) {
     char fullPath[1024];
     snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry->d_name);
@@ -135,9 +155,35 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("%*s%s\n", depth*2, "", entry->d_name);
     }
   }
+  */
+  qsort(entrylist, count, sizeof(struct dirent *), dirent_compare);
+
+  for (int i=0; i<count; i++) {
+    if (entrylist[i]->d_type == DT_DIR) {
+      stats->dirs += 1;
+      printf("%*s%s\n", depth*2, "", entrylist[i]->d_name);
+      
+      char fullPath[1024];
+      snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entrylist[i]->d_name);
+      processDir(fullPath, depth + 1, stats, flags);
+
+    } else {
+
+      if      (entrylist[i]->d_type == DT_REG) { stats->files += 1; }
+      else if (entrylist[i]->d_type == DT_LNK) { stats->links += 1; }
+      else if (entrylist[i]->d_type == DT_FIFO) { stats->fifos += 1; }
+      else if (entrylist[i]->d_type == DT_SOCK) { stats->socks += 1; }
+
+      printf("%*s%s\n", depth*2, "", entrylist[i]->d_name);
+    }
+  }
 
   closedir(dir);
 
+  for (int i = 0; i < count; i++) {
+      free(entrylist[i]);
+  }
+  free(entrylist);
 
 }
 
