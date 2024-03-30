@@ -100,6 +100,11 @@ static int dirent_compare(const void *a, const void *b)
 /// @param depth depth in directory tree
 /// @param stats pointer to statistics
 /// @param flags output control flags (F_*)
+struct entrylist {
+  char name[54];
+  unsigned char type;
+};
+
 void processDir(const char *dn, unsigned int depth, struct summary *stats, unsigned int flags)
 {
   // TODO
@@ -115,6 +120,39 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   }
 
   struct dirent *entry;
+  struct entrylist *entrylist[MAX_DIR];
+  int count = 0;
+  
+  while((entry = getNext(dir)) != NULL) {
+    strncpy(entrylist[count].name, entry->d_name, sizeof(entrylist[count].name));
+    entrylist[count].type = entrylist->d_type;
+    count += 1;
+  }
+
+  qsort(entrylist, count, sizeof(struct dirent *), dirent_compare);
+
+  for (int i=0; i<count; i++) {
+    if (entry->d_type == DT_DIR) {
+      stats->dirs += 1;
+
+      printf("%*s%s\n", depth*2, "", entrylist[i].name);
+
+      char fullpath[1024];
+      snprintf(fullpath, sizeof(fullpath), "%s/%s", dn, entrylist[i].name);
+      processDir(fullpath, depth+1, stats, flags);
+    
+    } else {
+
+      if      (entrylist[i].type == DT_REG) { stats->files += 1; }
+      else if (entrylist[i].type == DT_LNK) { stats->links += 1; }
+      else if (entrylist[i].type == DT_FIFO) { stats->fifos += 1; }
+      else if (entrylist[i].type == DT_SOCK) { stats->socks += 1; }
+
+      printf("%*s%s\n", depth*2, "", entrylist[i].name);
+    }
+  }
+
+  /*
   while ((entry = getNext(dir)) != NULL) {
     char fullPath[1024];
     snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry->d_name);
@@ -133,6 +171,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("%*s%s\n", depth*2, "", entry->d_name);
     }
   }
+  */
 
   closedir(dir);
 
