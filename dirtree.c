@@ -114,10 +114,11 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     exit(EXIT_FAILURE);
   }
 
-  struct dirent *entry;
+  printf("%*s[Directory] %s\n", depth * 2, "", dn);
 
+  struct dirent *entry;
   while ((entry = getNext(dir)) != NULL) {
-    printf("%s\n", entry->d_name);
+    printf("%*s- %s\n", (depth + 1) * 2, "", entry->d_name);  
   }
 
   closedir(dir);
