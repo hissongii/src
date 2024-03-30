@@ -125,7 +125,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         perror("Failed to allocate memory.");
         exit(EXIT_FAILURE);
     }
-    memcpy(entrylist[count], entry, sizeof(struct dirent));
+    strncpy(entrylist[count]->d_name, entry->d_name, 54);
+    entrylist[count]->d_type = entry->d_type;
     count += 1;
   }
 
