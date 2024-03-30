@@ -124,8 +124,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   int count = 0;
 
   while((entry = getNext(dir)) != NULL) {
-    strncpy(entrylist[count].name, entry->d_name, sizeof(entrylist[count].name));
-    entrylist[count].type = entry->d_type;
+    strncpy(entrylist[count]->name, entry->d_name, sizeof(entrylist[count]->name));
+    entrylist[count]->type = entry->d_type;
     count += 1;
   }
 
@@ -135,20 +135,20 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     if (entry->d_type == DT_DIR) {
       stats->dirs += 1;
 
-      printf("%*s%s\n", depth*2, "", entrylist[i].name);
+      printf("%*s%s\n", depth*2, "", entrylist[i]->name);
 
       char fullpath[1024];
-      snprintf(fullpath, sizeof(fullpath), "%s/%s", dn, entrylist[i].name);
+      snprintf(fullpath, sizeof(fullpath), "%s/%s", dn, entrylist[i]->name);
       processDir(fullpath, depth+1, stats, flags);
     
     } else {
 
-      if      (entrylist[i].type == DT_REG) { stats->files += 1; }
-      else if (entrylist[i].type == DT_LNK) { stats->links += 1; }
-      else if (entrylist[i].type == DT_FIFO) { stats->fifos += 1; }
-      else if (entrylist[i].type == DT_SOCK) { stats->socks += 1; }
+      if      (entrylist[i]->type == DT_REG) { stats->files += 1; }
+      else if (entrylist[i]->type == DT_LNK) { stats->links += 1; }
+      else if (entrylist[i]->type == DT_FIFO) { stats->fifos += 1; }
+      else if (entrylist[i]->type == DT_SOCK) { stats->socks += 1; }
 
-      printf("%*s%s\n", depth*2, "", entrylist[i].name);
+      printf("%*s%s\n", depth*2, "", entrylist[i]->name);
     }
   }
 
