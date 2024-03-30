@@ -116,7 +116,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
   struct dirent *entry;
 
-  while ((entry = getNext(dir) != NULL)) {
+  while ((entry = getNext(dir)) != NULL) {
     printf("%s\n", entry->d_name);
   }
 
@@ -215,15 +215,16 @@ int main(int argc, char *argv[])
   //...
   // CHANGE ONLY THIS PART
   for (int i = 0; i < ndir; i++) {
-  struct summary dstat;
-  memset(&dstat, 0, sizeof(dstat));
+    struct summary dstat;
+    memset(&dstat, 0, sizeof(dstat));
 
-  if (flags & F_SUMMARY) {
-    printf("Directory: %s\n", directories[i]);
+    if (flags & F_SUMMARY) {
+      printf("Directory: %s\n", directories[i]);
+    }
+
+    printf("[%s]\n", directories[i]);
+    processDir(directories[i], 0, &dstat, flags);
   }
-
-  printf("[%s]\n", directories[i]);
-  processDir(directories[i], 0, &dstat, flags);
 
 
 
