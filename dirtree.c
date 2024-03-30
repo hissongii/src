@@ -103,42 +103,25 @@ static int dirent_compare(const void *a, const void *b)
 void processDir(const char *dn, unsigned int depth, struct summary *stats, unsigned int flags)
 {
   // TODO
+  // open, enumerate, sort, close directory
+  // print elements
+  // update statistics
+  // if element is directory => call recursively
+
   DIR *dir = opendir(dn);
   if (!dir) {
-      perror("Failed to open directory");
-      return;
+    perror("Failed to open directory.")
+    exit(EXIT_FAILURE);
   }
 
   struct dirent *entry;
-  while ((entry = readdir(dir)) != NULL) {
-      if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-          continue;
-      }
 
-      char fullPath[1024];
-      snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry->d_name);
-
-      struct stat entryStat;
-      if (lstat(fullPath, &entryStat) == -1) {
-          perror("Failed to get file status");
-          continue;
-      }
-
-      if (S_ISDIR(entryStat.st_mode)) {
-          if (flags & F_VERBOSE) {
-              printf("%*s[Dir] %s\n", depth * 2, "", entry->d_name);
-          }
-          stats->dirs++;
-          processDir(fullPath, depth + 1, stats, flags);
-      } else {
-          if (flags & F_VERBOSE) {
-              printf("%*s[File] %s\n", depth * 2, "", entry->d_name);
-          }
-          stats->files++;
-      }
+  while ((entry = getNext(dir) != NULL)) {
+    printf("%s\n", entry->d_name);
   }
 
   closedir(dir);
+
 }
 
 
@@ -230,26 +213,7 @@ int main(int argc, char *argv[])
   //   - if F_SUMMARY flag set: print summary & update statistics
   memset(&tstat, 0, sizeof(tstat));
   //...
-
-  if (argc > 1) {
-      for (int i = 1; i < argc; i++) {
-          directories[i - 1] = argv[i];
-      }
-  } else {
-      directories[0] = ".";
-  }
-
-  for (int i = 0; i < ndir; i++) {
-      struct summary dstat;
-      memset(&dstat, 0, sizeof(dstat));
-
-      if (flags & F_SUMMARY) {
-          printf("Directory: %s\n", directories[i]);
-          printf("========================================\n");
-      }
-
-      processDir(directories[i], 0, &dstat, flags);
-  }
+  processDir(directory, 0, &stats, flags);
 
 
   //
