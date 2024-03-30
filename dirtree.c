@@ -122,10 +122,10 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   struct dirent *entry;
   struct entrylist *entrylist[MAX_DIR];
   int count = 0;
-  
+
   while((entry = getNext(dir)) != NULL) {
     strncpy(entrylist[count].name, entry->d_name, sizeof(entrylist[count].name));
-    entrylist[count].type = entrylist->d_type;
+    entrylist[count].type = entry->d_type;
     count += 1;
   }
 
