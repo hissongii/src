@@ -116,47 +116,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   }
 
   struct dirent *entry;
-  struct dirent *entrylist[MAX_DIR];
-  int count = 0;
 
-  while((entry = getNext(dir)) != NULL) {
-    if (count >= MAX_DIR) {
-      break;
-    }
-    entrylist[count] = malloc(sizeof(struct dirent));
-    if (entrylist[count] == NULL) {
-        perror("Failed to allocate memory.");
-        exit(EXIT_FAILURE);
-    }
-    strncpy(entrylist[count]->d_name, entry->d_name, 54);
-    entrylist[count]->d_type = entry->d_type;
-    count += 1;
-  }
-
-  qsort(entrylist, count, sizeof(struct dirent *), dirent_compare);
-
-  for (int i=0; i<count; i++) {
-    if (entrylist[i]->d_type == DT_DIR) {
-      stats->dirs += 1;
-
-      printf("%*s%s\n", depth*2, "", entrylist[i]->d_name);
-
-      char fullpath[1024];
-      snprintf(fullpath, sizeof(fullpath), "%s/%s", dn, entrylist[i]->d_name);
-      processDir(fullpath, depth+1, stats, flags);
-    
-    } else {
-
-      if      (entrylist[i]->d_type == DT_REG) { stats->files += 1; }
-      else if (entrylist[i]->d_type == DT_LNK) { stats->links += 1; }
-      else if (entrylist[i]->d_type == DT_FIFO) { stats->fifos += 1; }
-      else if (entrylist[i]->d_type == DT_SOCK) { stats->socks += 1; }
-
-      printf("%*s%s\n", depth*2, "", entrylist[i]->d_name);
-    }
-  }
-
-  /*
   while ((entry = getNext(dir)) != NULL) {
     char fullPath[1024];
     snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry->d_name);
@@ -175,13 +135,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("%*s%s\n", depth*2, "", entry->d_name);
     }
   }
-  */
 
   closedir(dir);
-
-  for (int i=0; i<MAX_DIR; i++) {
-    free(entrylist[i]);
-  }
 
 
 }
