@@ -183,13 +183,13 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
   closedir(dir);
 
-  for (int i = 0; i < MAX_DIR; i++) {
-    free(entrylist[i]);
-  }
 
 
 }
 
+  for (int i = 0; i < MAX_DIR; i++) {
+    free(entrylist[i]);
+  }
 
 /// @brief print program syntax and an optional error message. Aborts the program with EXIT_FAILURE
 ///
