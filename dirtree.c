@@ -120,10 +120,17 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry->d_name);
 
     if (entry->d_type == DT_DIR) {
-      printf("%s\n", entry->d_name);
+      stats->dirs += 1;
+      printf("%*s\n", depth*2, entry->d_name);
       processDir(fullPath, depth + 1, stats, flags);
     } else {
-      printf("%s\n", entry->d_name);
+
+      if      (entry->d_type == DT_REG) { stats->files += 1; }
+      else if (entry->d_type == DT_LNK) { stats->links += 1; }
+      else if (entry->d_type == DT_FIFO) { stats->fifos += 1; }
+      else if (entry->d_type == DT_SOCK) { stats->socks += 1; }
+
+      printf("%*s\n", depth*2, entry->d_name);
     }
   }
 
