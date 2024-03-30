@@ -120,6 +120,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry->d_name);
 
     if (entry->d_type == DT_DIR) {
+      printf("%s\n", entry->d_name);
       processDir(fullPath, depth + 1, stats, flags);
     } else {
       printf("%s\n", entry->d_name);
