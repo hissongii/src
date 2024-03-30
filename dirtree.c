@@ -110,7 +110,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
   DIR *dir = opendir(dn);
   if (!dir) {
-    perror("Failed to open directory.")
+    perror("Failed to open directory.");
     exit(EXIT_FAILURE);
   }
 
