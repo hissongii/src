@@ -22,6 +22,7 @@
 #include <pwd.h>
 
 #define MAX_DIR 64            ///< maximum number of supported directories
+#define NAME_WID 54
 
 /// @brief output control flags
 #define F_DIRONLY   0x1       ///< turn on direcetory only option
@@ -134,6 +135,16 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       panic("Failed to write path & name.");
     }
 
+    char name_limited[NAME_WID+1];
+    if (name_len > NAME_WID) {
+      strncpy(name_limited, name, NAME_WID-3);
+      name_limited[NAME_WID - 3] = '\0';
+      strcat(name_limited, "...");
+    } else {
+      strncpy(name_limited, name, name_len);
+      name_limited[name_len] = '\0';
+    }
+
     // define user & group
     struct stat info;
     struct passwd *user_info = getpwuid(info.st_uid);
@@ -157,9 +168,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     if (entrylist[i].d_type == DT_DIR) {
       stats->dirs += 1;
 
-      // print path and name
-      if (name_len > 54) { printf("%-51s...", name); }
-      else { printf("%-54s", name); }
+      printf("%-*s", NAME_WID, name_limited);
       printf("  ");
 
       // print user & group
@@ -185,8 +194,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       else if (entrylist[i].d_type == DT_SOCK) { stats->socks += 1; }
 
       // print path and name
-      if (name_len > 54) { printf("%-51s...", name); }
-      else { printf("%-54s", name); }
+      printf("%-*s", NAME_WID, name_limited);
       printf("  ");
 
       // print user & group
