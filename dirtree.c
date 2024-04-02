@@ -167,7 +167,15 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       else if (entrylist[i].d_type == DT_FIFO) { stats->fifos += 1; }
       else if (entrylist[i].d_type == DT_SOCK) { stats->socks += 1; }
 
-      printf("%*s%s\n", depth*2, "", entrylist[i].d_name);
+      // print path and name
+      if (strlen(name) > 54) { printf("%-51s...", name); }
+      else { printf("%-54s", name); }
+      printf("  ");
+      
+      // print user & group
+      printf("%s:%s", user, group);
+      printf("  ");
+      
     }
 
   }
