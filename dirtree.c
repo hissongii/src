@@ -25,6 +25,8 @@
 #define NAME_WID 54
 #define USER_WID 8
 #define GROUP_WID 8
+#define FILSZ_WID 10
+#define PERM_WID 9
 #define SUMLN_WID 68
 #define TOTSZ_WID 14
 
@@ -137,6 +139,14 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   closedir(dir);
 
   for (int i=0; i<count; i++) {
+    struct stat info;
+
+    char *full_path;
+    int full_path_len = asprintf(&full_path, "%s/%s", dn, entrylist[i].d_name);
+    if (full_path_len == -1) {
+      panic("Failed to get full path.");
+    }
+
     if (flags & F_DIRONLY) { if (entrylist[i].d_type != DT_DIR) { continue; } }
 
     // ***UPDATE STATISTICS***
@@ -173,9 +183,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         }
       }
       free(name);
-
+      
       // 2. USER & GROUP
-      struct stat info;
       struct passwd *user_info = getpwuid(info.st_uid);
       struct group *group_info = getgrgid(info.st_gid);
       if (user_info == NULL || group_info == NULL) {
@@ -216,120 +225,40 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
           strncat(line, " ", 1);
         }
       }
-
       free(user);
       free(group);
+
+      if (lstat(full_path, &info) == 0) {
+        // 3. SIZE
+        int size_int = info.st_size;
+        stats->size += size_int;
+        char size[FILSZ_WID+1];
+        int size_len = snprintf(size, sizeof(size), "%d", size_int);
+        if (size_len > FILSZ_WID) {
+          strncat(line, size, FILSZ_WID);
+        } else {
+          for (int i=0; i<FILSZ_WID-size_len; i++) {
+            strncat(line, " ", 1);
+          }
+          strncat(line, size, size_len);  
+        }
+        
+        // 4. PERMISSION
+        // 5. TYPE
+      } else {
+        panic("Failed to get file stats.");
+      }
+
     }
 
     // final. PRINT
-    // if (flags & F_VERBOSE) { line[98] = '\0'; }
     printf("%s\n", line);
 
     // ***RECURSIVE CALL***
     if (entrylist[i].d_type == DT_DIR) {
-      char *full_path;
-      int full_path_len = asprintf(&full_path, "%s/%s", dn, entrylist[i].d_name);
-      if (full_path_len == -1) {
-        panic("Failed to get full path.");
-      }
       processDir(full_path, depth+1, stats, flags);
     }
 
-    /*
-    // 2) DETAILED INFO (for -v mode)
-    // 2-1) NAME LIMITED
-    char name_limited[NAME_WID+1];
-    if (name_len > NAME_WID) {
-      strncpy(name_limited, name, NAME_WID-3);
-      name_limited[NAME_WID - 3] = '\0';
-      strcat(name_limited, "...");
-    } else {
-      strncpy(name_limited, name, name_len);
-      name_limited[name_len] = '\0';
-    }
-
-    // 2-2) USER & GROUP
-    struct stat info;
-    struct passwd *user_info = getpwuid(info.st_uid);
-    struct group *group_info = getgrgid(info.st_gid);
-    if (user_info == NULL || group_info == NULL) {
-      panic("Failed to get file information.");
-    }
-    
-    char *user;
-    int user_len = asprintf(&user, "%s", user_info->pw_name);
-    if (user_len == -1) {
-      panic("Failed to write user.");
-    }
-    char user_limited[USER_WID+1];
-    int user_overflow = (user_len > USER_WID) ? USER_WID : user_len;
-    strncpy(user_limited, user, user_overflow);
-    user_limited[user_overflow] = '\0';
-
-
-    char *group;
-    int group_len = asprintf(&group, "%s", group_info->gr_name);
-    if (group_len == -1) {
-      panic("Failed to write group.");
-    }
-    char group_limited[GROUP_WID+1];
-    int group_overflow = (group_len > GROUP_WID) ? GROUP_WID : group_len;
-    strncpy(group_limited, group, group_overflow);
-    group_limited[group_overflow] = '\0';
-
-    // 2-3) SIZE
-    // 2-4) PERMISSION
-    // 2-5) TYPE
-    if (entrylist[i].d_type == DT_DIR) {
-      stats->dirs += 1;
-
-      if (!(flags & F_VERBOSE)) {
-        printf("%s", name);
-      } else {
-        // print path and name
-        printf("%-*s", NAME_WID, name_limited);
-
-        // print user & group
-        printf("  ");
-        printf("%*s:%-*s", USER_WID, user_limited, GROUP_WID, group_limited);
-
-      }
-      printf("\n");
-
-      // call recursively
-      char fullPath[1024];
-      snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entrylist[i].d_name);
-      processDir(fullPath, depth+1, stats, flags);
-
-    } else {
-
-      if      (entrylist[i].d_type == DT_REG) { stats->files += 1; }
-      else if (entrylist[i].d_type == DT_LNK) { stats->links += 1; }
-      else if (entrylist[i].d_type == DT_FIFO) { stats->fifos += 1; }
-      else if (entrylist[i].d_type == DT_SOCK) { stats->socks += 1; }
-
-      if (flags & F_DIRONLY) {
-        continue;
-      }
-
-      if (!(flags & F_VERBOSE)) {
-        printf("%s", name);
-      } else {
-        // print path and name
-        printf("%-*s", NAME_WID, name_limited);
-
-        // print user & group
-        printf("  ");
-        printf("%*s:%-*s", USER_WID, user_limited, GROUP_WID, group_limited);
-
-      }
-      printf("\n");
-
-    }
-    free(name);
-    free(user);
-    free(group);
-    */
   }
   
 }
