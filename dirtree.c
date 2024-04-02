@@ -370,7 +370,7 @@ int main(int argc, char *argv[])
         } else {
           char summary_line_limited[SUMLN_WID+1];
           int summary_line_overflow = (summary_line_len > SUMLN_WID) ? SUMLN_WID : summary_line_len;
-          strncpy(summary_line_limited, suammary_line, summary_line_overflow);
+          strncpy(summary_line_limited, summary_line, summary_line_overflow);
           summary_line_limited[summary_line_overflow] = '\0';
 
           int total_size = 0; // should be changed
