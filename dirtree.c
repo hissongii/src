@@ -80,8 +80,8 @@ struct dirent *getNext(DIR *dir)
 /// @retval 1  if a>b
 static int dirent_compare(const void *a, const void *b)
 {
-  struct dirent *e1 = (struct dirent*)a;
-  struct dirent *e2 = (struct dirent*)b;
+  struct dirent *e1 = *((struct dirent*)a);
+  struct dirent *e2 = *((struct dirent*)b);
 
   // if one of the entries is a directory, it comes first
   if (e1->d_type != e2->d_type) {
@@ -116,14 +116,45 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   }
 
   struct dirent *entry;
+  struct dirent *entry_ptrs[MAX_DIR];
+  int count = 0;
 
+  while ((entry = getNext(dir)) != NULL && count < MAX_DIR) {
+    entry_ptrs[count] = entry;
+    count += 1;
+  }
+  closedir(dir);
+
+  qsort(entry_ptrs, count, sizeof(struct dirent*), dirent_compare);
+
+  for (int i=0; i<count; i++) {
+    if (entry_ptrs->d_type == DT_DIR) {
+      stats->dirs += 1;
+      printf("%*s%s\n", depth*2, "", entry_ptrs->d_name);
+
+      char fullPath[1024];
+      snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry_ptrs->d_name);
+      processDir(fullPath, depth + 1, stats, flags);
+    } else {
+
+      if      (entry_ptrs->d_type == DT_REG) { stats->files += 1; }
+      else if (entry_ptrs->d_type == DT_LNK) { stats->links += 1; }
+      else if (entry_ptrs->d_type == DT_FIFO) { stats->fifos += 1; }
+      else if (entry_ptrs->d_type == DT_SOCK) { stats->socks += 1; }
+
+      printf("%*s%s\n", depth*2, "", entry_ptrs->d_name);
+    }
+
+  }
+
+  /*
   while ((entry = getNext(dir)) != NULL) {
-    char fullPath[1024];
-    snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry->d_name);
-
     if (entry->d_type == DT_DIR) {
       stats->dirs += 1;
       printf("%*s%s\n", depth*2, "", entry->d_name);
+
+      char fullPath[1024];
+      snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry->d_name);
       processDir(fullPath, depth + 1, stats, flags);
     } else {
 
@@ -136,7 +167,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     }
   }
   closedir(dir);
-
+  */
 }
 
 
