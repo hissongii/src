@@ -120,7 +120,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   int count = 0;
 
   while ((entry = getNext(dir)) != NULL && count < MAX_DIR) {
-    entry_ptrs[count] = *entry;
+    entrylist[count] = *entry;
     printf("%s\n", entrylist[count]->d_name);
     count += 1;
   }
