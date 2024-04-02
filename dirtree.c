@@ -130,13 +130,15 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   qsort(entrylist, count, sizeof(struct dirent), dirent_compare);
 
   for (int i=0; i<count; i++) {
-    // define path and name
+    // 1) NAME (for none-v mode)
     char *name;
     int name_len = asprintf(&name, "%*s%s", depth*2, "", entrylist[i].d_name);
     if (name_len == -1) {
       panic("Failed to write path & name.");
     }
 
+    // 2) DETAILED INFO (for -v mode)
+    // 2-1) NAME LIMITED
     char name_limited[NAME_WID+1];
     if (name_len > NAME_WID) {
       strncpy(name_limited, name, NAME_WID-3);
@@ -146,9 +148,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       strncpy(name_limited, name, name_len);
       name_limited[name_len] = '\0';
     }
-    free(name);
 
-    // define user & group
+    // 2-2) USER & GROUP
     struct stat info;
     struct passwd *user_info = getpwuid(info.st_uid);
     struct group *group_info = getgrgid(info.st_gid);
@@ -175,24 +176,23 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     user_limited[user_overflow] = '\0';
     strncpy(group_limited, group, group_overflow);
     group_limited[group_overflow] = '\0';
-    free(user);
-    free(group);
 
     if (entrylist[i].d_type == DT_DIR) {
       stats->dirs += 1;
 
-      // print path and name
-      printf("%-*s", NAME_WID, name_limited);
+      if (!(flags & F_VERBOSE)) {
+        printf("%s", name);
+      } else {
+        // print path and name
+        printf("%-*s", NAME_WID, name_limited);
 
-      if (flags & F_SUMMARY) {  
         // print user & group
         printf("  ");
         printf("%*s:%-*s", USER_WID, user_limited, GROUP_WID, group_limited);
 
       }
-
       printf("\n");
-      
+
       // call recursively
       char fullPath[1024];
       snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entrylist[i].d_name);
@@ -209,18 +209,23 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         continue;
       }
 
-      // print path and name
-      printf("%-*s", NAME_WID, name_limited);
+      if (!(flags & F_VERBOSE)) {
+        printf("%s", name);
+      } else {
+        // print path and name
+        printf("%-*s", NAME_WID, name_limited);
 
-      if (flags & F_SUMMARY) {  
         // print user & group
         printf("  ");
         printf("%*s:%-*s", USER_WID, user_limited, GROUP_WID, group_limited);
 
       }
-
       printf("\n");
+
     }
+    free(name);
+    free(user);
+    free(group);
   }
   
 }
