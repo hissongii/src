@@ -247,11 +247,9 @@ int main(int argc, char *argv[])
       printf("Directory: %s\n", directories[i]);
     }
 
-    printf("[%s]\n", directories[i]);
-    processDir(directories[i], 0, &dstat, flags);
+    printf("%s\n", directories[i]);
+    processDir(directories[i], 1, &dstat, flags);
   }
-
-
 
   //
   // print grand total
