@@ -131,7 +131,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     char *name;
     int name_len = asprintf(&name, "%*s%s\n", depth*2, "", entrylist[i].d_name);
     if (name_len == -1) {
-      panic("Failed to write path & name.")
+      panic("Failed to write path & name.");
     }
 
     // define user & group
@@ -143,10 +143,10 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     int user_len = asprintf(&user, "%s", user_info->pw_name);
     int group_len = asprintf(&group, "%s", group_info->gr_name);
     if (user_len == -1) {
-      panic("Failed to write user.")
+      panic("Failed to write user.");
     }
     if (group_len == -1) {
-      panic("Failed to write group.")
+      panic("Failed to write group.");
     }
     
     if (entrylist[i].d_type == DT_DIR) {
@@ -311,7 +311,7 @@ int main(int argc, char *argv[])
           dstat.links, (dstat.links != 1) ? "s" : "",
           dstat.fifos, (dstat.fifos != 1) ? "s" : "",
           dstat.socks, (dstat.socks != 1) ? "s" : "");
-        if (summary_line == -1) {
+        if (summary_line_len == -1) {
           panic("Failed to print summary line.");
         }
         printf("%-68s%14d", summary_line, total_size);
