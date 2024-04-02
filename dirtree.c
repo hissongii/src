@@ -374,7 +374,7 @@ int main(int argc, char *argv[])
           summary_line_limited[summary_line_overflow] = '\0';
 
           int total_size = 0; // should be changed
-          print("%14d", total_size);
+          printf("%14d", total_size);
 
         }
         free(summary_line);
