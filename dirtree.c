@@ -116,7 +116,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   }
 
   struct dirent *entry;
-  struct dirent *entry_ptrs[MAX_DIR];
+  struct dirent **entry_ptrs[MAX_DIR];
   int count = 0;
 
   while ((entry = getNext(dir)) != NULL && count < MAX_DIR) {
