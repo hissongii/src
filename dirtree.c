@@ -163,6 +163,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       // line[0] ~ line[53], width 54
       if (name_len > NAME_WID) {
         strncpy(line, name, NAME_WID-3);
+        line[NAME_WID-3] = '\0';
         strncat(line, "...", 3);
       } else {
         strncpy(line, name, name_len);
