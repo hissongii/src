@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
     if (flags & F_SUMMARY) {
       printf("----------------------------------------------------------------------------------------------------\n");
       if (flags & F_DIRONLY) {
-        printf("%d director%s", dstat.dirs, (dstat.dirs != 1) ? "ies" : "y")
+        printf("%d director%s", dstat.dirs, (dstat.dirs != 1) ? "ies" : "y");
       } else {
         printf(
           "%d file%s, %d director%s, %d link%s, %d pipe%s, and %d socket%s",
