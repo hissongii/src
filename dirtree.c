@@ -183,6 +183,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         }
       }
       free(name);
+
+      printf("  ");
       
       // 2. USER & GROUP
       struct passwd *user_info = getpwuid(info.st_uid);
@@ -228,8 +230,13 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       free(user);
       free(group);
 
+      printf("  ");
+
       if (lstat(full_path, &info) == 0) {
         // 3. SIZE
+
+        strncat("%d", info.st_size);
+        /*
         int size_int = info.st_size;
         stats->size += size_int;
         char size[FILSZ_WID+1];
@@ -245,6 +252,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         
         // 4. PERMISSION
         // 5. TYPE
+        */
       } else {
         panic("Failed to get file stats.");
       }
