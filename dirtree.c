@@ -342,18 +342,20 @@ int main(int argc, char *argv[])
       printf("----------------------------------------------------------------------------------------------------\n");
       if (flags & F_DIRONLY) {
         char *summary_line;
-        int summary_line_len = asprintf(&summary_line, "%d director%s\n", dstat.dirs, (dstat.dirs != 1) ? "ies" : "y");
+        int summary_line_len = asprintf(&summary_line, "%d director%s", dstat.dirs, (dstat.dirs != 1) ? "ies" : "y");
         if (summary_line_len == -1) {
           panic("Failed to print summary line.");
         }
 
         if (!(flags & F_VERBOSE)) {
-          printf("%-*s", SUMLN_WID, summary_line);
+          printf("%s", summary_line);
         } else {
           char summary_line_limited[SUMLN_WID+1];
           int summary_line_overflow = (summary_line_len > SUMLN_WID) ? SUMLN_WID : summary_line_len;
           strncpy(summary_line_limited, summary_line, summary_line_overflow);
           summary_line_limited[summary_line_overflow] = '\0';
+          printf("%-*s", SUMLN_WID, summary_line);
+
         }
         free(summary_line);
 
@@ -371,12 +373,13 @@ int main(int argc, char *argv[])
         }
 
         if (!(flags & F_VERBOSE)) {
-          printf("%-*s", SUMLN_WID, summary_line);
+          printf("%s", summary_line);
         } else {
           char summary_line_limited[SUMLN_WID+1];
           int summary_line_overflow = (summary_line_len > SUMLN_WID) ? SUMLN_WID : summary_line_len;
           strncpy(summary_line_limited, summary_line, summary_line_overflow);
           summary_line_limited[summary_line_overflow] = '\0';
+          printf("%-*s", SUMLN_WID, summary_line);
 
           int total_size = 0; // should be changed
           printf("%14d", total_size);
