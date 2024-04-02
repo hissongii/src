@@ -137,6 +137,10 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       processDir(fullPath, depth+1, stats, flags);
     } else {
 
+      if (flags & F_DIRONLY) {
+        continue;
+      }
+
       if      (entrylist[i].d_type == DT_REG) { stats->files += 1; }
       else if (entrylist[i].d_type == DT_LNK) { stats->links += 1; }
       else if (entrylist[i].d_type == DT_FIFO) { stats->fifos += 1; }
@@ -254,10 +258,10 @@ int main(int argc, char *argv[])
     if (flags & F_SUMMARY) {
       printf("----------------------------------------------------------------------------------------------------\n");
       if (flags & F_DIRONLY) {
-        printf("%d director%s", dstat.dirs, (dstat.dirs != 1) ? "ies" : "y");
+        printf("%d director%s\n", dstat.dirs, (dstat.dirs != 1) ? "ies" : "y");
       } else {
         printf(
-          "%d file%s, %d director%s, %d link%s, %d pipe%s, and %d socket%s",
+          "%d file%s, %d director%s, %d link%s, %d pipe%s, and %d socket%s\n",
           dstat.files, (dstat.files != 1) ? "s" : "",
           dstat.dirs, (dstat.dirs != 1) ? "ies" : "y",
           dstat.links, (dstat.links != 1) ? "s" : "",
