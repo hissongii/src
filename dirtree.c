@@ -128,6 +128,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
   qsort(entry_ptrs, count, sizeof(struct dirent*), dirent_compare);
 
+  /*
   for (int i=0; i<count; i++) {
     if (entry_ptrs[i]->d_type == DT_DIR) {
       stats->dirs += 1;
@@ -146,7 +147,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("%*s%s\n", depth*2, "", entry_ptrs[i]->d_name);
     }
 
-  }
+  }*/
 
   /*
   while ((entry = getNext(dir)) != NULL) {
