@@ -121,7 +121,6 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
   while ((entry = getNext(dir)) != NULL && count < MAX_DIR) {
     entrylist[count] = *entry;
-    // printf("%s\n", entrylist[count].d_name);
     count += 1;
   }
   closedir(dir);
@@ -129,52 +128,25 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   qsort(entrylist, count, sizeof(struct dirent), dirent_compare);
 
   for (int i=0; i<count; i++) {
-    printf("%s\n", entrylist[count].d_name);
-  }
-  
-  // printf("%s\n", entry_ptrs[0]->d_name);
-  /*
-  for (int i=0; i<count; i++) {
-    if (entry_ptrs[i]->d_type == DT_DIR) {
+    if (entrylist[i]->d_type == DT_DIR) {
       stats->dirs += 1;
-      printf("%*s%s\n", depth*2, "", entry_ptrs[i]->d_name);
+      printf("%*s%s\n", depth*2, "", entrylist[i]->d_name);
 
       char fullPath[1024];
-      snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry_ptrs[i]->d_name);
+      snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entrylist[i]->d_name);
       processDir(fullPath, depth+1, stats, flags);
     } else {
 
-      if      (entry_ptrs[i]->d_type == DT_REG) { stats->files += 1; }
-      else if (entry_ptrs[i]->d_type == DT_LNK) { stats->links += 1; }
-      else if (entry_ptrs[i]->d_type == DT_FIFO) { stats->fifos += 1; }
-      else if (entry_ptrs[i]->d_type == DT_SOCK) { stats->socks += 1; }
+      if      (entrylist[i]->d_type == DT_REG) { stats->files += 1; }
+      else if (entrylist[i]->d_type == DT_LNK) { stats->links += 1; }
+      else if (entrylist[i]->d_type == DT_FIFO) { stats->fifos += 1; }
+      else if (entrylist[i]->d_type == DT_SOCK) { stats->socks += 1; }
 
-      printf("%*s%s\n", depth*2, "", entry_ptrs[i]->d_name);
+      printf("%*s%s\n", depth*2, "", entrylist[i]->d_name);
     }
 
-  }*/
-
-  /*
-  while ((entry = getNext(dir)) != NULL) {
-    if (entry->d_type == DT_DIR) {
-      stats->dirs += 1;
-      printf("%*s%s\n", depth*2, "", entry->d_name);
-
-      char fullPath[1024];
-      snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry->d_name);
-      processDir(fullPath, depth + 1, stats, flags);
-    } else {
-
-      if      (entry->d_type == DT_REG) { stats->files += 1; }
-      else if (entry->d_type == DT_LNK) { stats->links += 1; }
-      else if (entry->d_type == DT_FIFO) { stats->fifos += 1; }
-      else if (entry->d_type == DT_SOCK) { stats->socks += 1; }
-
-      printf("%*s%s\n", depth*2, "", entry->d_name);
-    }
   }
-  closedir(dir);
-  */
+
 }
 
 
