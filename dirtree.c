@@ -111,8 +111,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
   DIR *dir = opendir(dn);
   if (!dir) {
-    perror("Failed to open directory.");
-    exit(EXIT_FAILURE);
+    panic("Failed to open directory.");
   }
 
   struct dirent *entry;
@@ -128,27 +127,38 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   qsort(entrylist, count, sizeof(struct dirent), dirent_compare);
 
   for (int i=0; i<count; i++) {
-    // path and name
-    char *name = NULL;
-    asprintf(&name, "%*s%s\n", depth*2, "", entrylist[i].d_name);
+    // define path and name
+    char *name;
+    int name_len = asprintf(&name, "%*s%s\n", depth*2, "", entrylist[i].d_name);
+    if (name_len == -1) {
+      panic("Failed to write path & name.")
+    }
 
-    // user & group
-    struct passwd *user_info = getpwuid(entrylist[i].d_uid);
-    struct group *group_info = getgrgid(entrylist[i].d_gid);
-    char *user = NULL;
-    char *group = NULL;
-    asprintf(&user, "%8s", user_info->pw_name);
-    asprintf(&group, "%-8s", group_info->gr_name);
-
+    // define user & group
+    struct stat info;
+    struct passwd *user_info = getpwuid(info.st_uid);
+    struct group *group_info = getgrgid(info.st_gid);
+    char *user;
+    char *group;
+    int user_len = asprintf(&user, "%s", user_info->pw_name);
+    int group_len = asprintf(&group, "%s", group_info->gr_name);
+    if (user_len == -1) {
+      panic("Failed to write user.")
+    }
+    if (group_len == -1) {
+      panic("Failed to write group.")
+    }
+    
     if (entrylist[i].d_type == DT_DIR) {
       stats->dirs += 1;
+
       // print path and name
-      if (strlen(name) > 54) { printf("%-51s...", name); }
+      if (name_len > 54) { printf("%-51s...", name); }
       else { printf("%-54s", name); }
       printf("  ");
 
       // print user & group
-      printf("%s:%s", user, group);
+      printf("%8s:%-8s", user, group);
       printf("  ");
 
       // call recursively
@@ -168,19 +178,19 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       else if (entrylist[i].d_type == DT_SOCK) { stats->socks += 1; }
 
       // print path and name
-      if (strlen(name) > 54) { printf("%-51s...", name); }
+      if (name_len > 54) { printf("%-51s...", name); }
       else { printf("%-54s", name); }
       printf("  ");
-      
+
       // print user & group
-      printf("%s:%s", user, group);
+      printf("%8s:%-8s", user, group);
       printf("  ");
 
     }
-    free(group);
-    free(user);
     free(name);
-    
+    free(user);
+    free(group);
+
   }
   
 }
@@ -292,15 +302,18 @@ int main(int argc, char *argv[])
       if (flags & F_DIRONLY) {
         printf("%d director%s\n", dstat.dirs, (dstat.dirs != 1) ? "ies" : "y");
       } else {
-        char *summary_line = NULL;
         int total_size = 0; // should be changed
-        asprintf(&summary_line, "%d file%s, %d director%s, %d link%s, %d pipe%s, and %d socket%s\n",
+        char *summary_line;
+        int summary_line_len = asprintf(&summary_line,
+          "%d file%s, %d director%s, %d link%s, %d pipe%s, and %d socket%s\n",
           dstat.files, (dstat.files != 1) ? "s" : "",
           dstat.dirs, (dstat.dirs != 1) ? "ies" : "y",
           dstat.links, (dstat.links != 1) ? "s" : "",
           dstat.fifos, (dstat.fifos != 1) ? "s" : "",
-          dstat.socks, (dstat.socks != 1) ? "s" : ""
-        );
+          dstat.socks, (dstat.socks != 1) ? "s" : "");
+        if (summary_line == -1) {
+          panic("Failed to print summary line.");
+        }
         printf("%-68s%14d", summary_line, total_size);
         free(summary_line);
       }
