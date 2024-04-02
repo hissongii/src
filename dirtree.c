@@ -80,8 +80,8 @@ struct dirent *getNext(DIR *dir)
 /// @retval 1  if a>b
 static int dirent_compare(const void *a, const void *b)
 {
-  struct dirent *e1 = *((struct dirent**)a);
-  struct dirent *e2 = *((struct dirent**)b);
+  struct dirent *e1 = (struct dirent*)a;
+  struct dirent *e2 = (struct dirent*)b;
 
   // if one of the entries is a directory, it comes first
   if (e1->d_type != e2->d_type) {
