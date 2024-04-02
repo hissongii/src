@@ -26,6 +26,7 @@
 #define USER_WID 8
 #define GROUP_WID 8
 #define SUMLN_WID 68
+#define TOTSZ_WID 14
 
 /// @brief output control flags
 #define F_DIRONLY   0x1       ///< turn on direcetory only option
@@ -113,11 +114,13 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   // update statistics
   // if element is directory => call recursively
 
+  // ***OPEN***
   DIR *dir = opendir(dn);
   if (!dir) {
     panic("Failed to open directory.");
   }
 
+  // ***ENUMERATE***
   struct dirent *entry;
   struct dirent entrylist[MAX_DIR];
   int count = 0;
@@ -126,18 +129,111 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     entrylist[count] = *entry;
     count += 1;
   }
-  closedir(dir);
 
+  // ***SORT***
   qsort(entrylist, count, sizeof(struct dirent), dirent_compare);
 
+  // ***CLOSE***
+  closedir(dir);
+
   for (int i=0; i<count; i++) {
-    // 1) NAME (for none-v mode)
+    if (flags & F_DIRONLY) { if (entrylist[i].d_type != DT_DIR) { continue; } }
+
+    // ***UPDATE STATISTICS***
+    if      (entrylist[i].d_type == DT_DIR) { stats->dirs += 1; }
+    else if (entrylist[i].d_type == DT_REG) { stats->files += 1; }
+    else if (entrylist[i].d_type == DT_LNK) { stats->links += 1; }
+    else if (entrylist[i].d_type == DT_FIFO) { stats->fifos += 1; }
+    else if (entrylist[i].d_type == DT_SOCK) { stats->socks += 1; }
+
+    // ***PRINT LINE***
+    char line[99];
+
+    // 1. NAME
     char *name;
     int name_len = asprintf(&name, "%*s%s", depth*2, "", entrylist[i].d_name);
-    if (name_len == -1) {
-      panic("Failed to write path & name.");
+    if (name_len == -1) { panic("Failed to write path & name."); }
+
+    if (!(flags & F_VERBOSE)) {
+      strncpy(line, name, name_len);
+      line[name_len] = '\0';
+    }
+    
+    else {
+      // line[0] ~ line[53], width 54
+      if (name_len > NAME_WID) {
+        strncpy(line, name, NAME_WID-3);
+        strncat(line, "...", 3);
+      } else {
+        strncpy(line, name, name_len);
+        for (int i=0; i<NAME_WID-name_len; i++) {
+          strncat(line, " ", 1);
+        }
+      }
+      free(name);
+
+      // 2. USER & GROUP
+      struct stat info;
+      struct passwd *user_info = getpwuid(info.st_uid);
+      struct group *group_info = getgrgid(info.st_gid);
+      if (user_info == NULL || group_info == NULL) {
+        panic("Failed to get file information.");
+      }
+      
+      char *user;
+      int user_len = asprintf(&user, "%s", user_info->pw_name);
+      if (user_len == -1) {
+        panic("Failed to write user.");
+      }
+
+      char *group;
+      int group_len = asprintf(&group, "%s", group_info->gr_name);
+      if (group_len == -1) {
+        panic("Failed to write group.");
+      }
+
+      // line[54] ~ line[70], width 8+1+8 = 17
+      // (1) user: line[54] ~ line[61], width 8
+      if (user_len > USER_WID) {
+        strncat(line, user, USER_WID);
+      } else {
+        for (int i=0; i<USER_WID-user_len; i++) {
+          strncat(line, " ", 1);
+        }
+        strncat(line, user, user_len);
+      }
+      // (2) ":": line[62], width 1
+      strncat(line, ":", 1);
+
+      // (3) group: line[63] ~ line[70], width 8
+      if (group_len > GROUP_WID) {
+        strncat(line, group, GROUP_WID);
+      } else {
+        strncat(line, group, group_len);
+        for (int i=0; i<GROUP_WID-group_len; i++) {
+          strncat(line, " ", 1);
+        }
+      }
+
+      free(user);
+      free(group);
     }
 
+    // final. PRINT
+    if (flags & F_VERBOSE) { line[98] = '\0'; }
+    printf("%s\n", line);
+
+    // ***RECURSIVE CALL***
+    if (entrylist[i].d_type == DT_DIR) {
+      char *full_path;
+      int full_path_len = asprintf(&full_path, "%s/%s", dn, entrylist[i].d_name);
+      if (full_path_len == -1) {
+        panic("Failed to get full path.")
+      }
+      processDir(full_path, depth+1, stats, flags);
+    }
+
+    /*
     // 2) DETAILED INFO (for -v mode)
     // 2-1) NAME LIMITED
     char name_limited[NAME_WID+1];
@@ -159,25 +255,29 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     }
     
     char *user;
-    char *group;
     int user_len = asprintf(&user, "%s", user_info->pw_name);
-    int group_len = asprintf(&group, "%s", group_info->gr_name);
     if (user_len == -1) {
       panic("Failed to write user.");
     }
+    char user_limited[USER_WID+1];
+    int user_overflow = (user_len > USER_WID) ? USER_WID : user_len;
+    strncpy(user_limited, user, user_overflow);
+    user_limited[user_overflow] = '\0';
+
+
+    char *group;
+    int group_len = asprintf(&group, "%s", group_info->gr_name);
     if (group_len == -1) {
       panic("Failed to write group.");
     }
-
-    char user_limited[USER_WID+1];
     char group_limited[GROUP_WID+1];
-    int user_overflow = (user_len > USER_WID) ? USER_WID : user_len;
     int group_overflow = (group_len > GROUP_WID) ? GROUP_WID : group_len;
-    strncpy(user_limited, user, user_overflow);
-    user_limited[user_overflow] = '\0';
     strncpy(group_limited, group, group_overflow);
     group_limited[group_overflow] = '\0';
 
+    // 2-3) SIZE
+    // 2-4) PERMISSION
+    // 2-5) TYPE
     if (entrylist[i].d_type == DT_DIR) {
       stats->dirs += 1;
 
@@ -227,6 +327,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     free(name);
     free(user);
     free(group);
+    */
   }
   
 }
@@ -381,8 +482,8 @@ int main(int argc, char *argv[])
           summary_line_limited[summary_line_overflow] = '\0';
           printf("%-*s", SUMLN_WID, summary_line);
 
-          int total_size = 0; // should be changed
-          printf("%14d", total_size);
+          printf("   ");
+          printf("%*d", TOTSZ_WID, dstat.size);
 
         }
         free(summary_line);
