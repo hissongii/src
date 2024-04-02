@@ -101,9 +101,6 @@ static int dirent_compare(const void *a, const void *b)
 /// @param stats pointer to statistics
 /// @param flags output control flags (F_*)
 
-struct ENTRY_PTRS {
-  struct dirent*
-}
 void processDir(const char *dn, unsigned int depth, struct summary *stats, unsigned int flags)
 {
   // TODO
