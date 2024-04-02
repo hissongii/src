@@ -161,6 +161,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("%8s:%-8s", user, group);
       printf("  ");
 
+      printf("\n");
+      
       // call recursively
       char fullPath[1024];
       snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entrylist[i].d_name);
@@ -186,6 +188,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("%8s:%-8s", user, group);
       printf("  ");
 
+      printf("\n")
     }
     free(name);
     free(user);
@@ -317,7 +320,7 @@ int main(int argc, char *argv[])
         printf("%-68s%14d", summary_line, total_size);
         free(summary_line);
       }
-      
+      printf("\n")
     }
 
     tstat.dirs += dstat.dirs;
