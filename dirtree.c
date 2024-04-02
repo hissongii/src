@@ -25,6 +25,7 @@
 #define NAME_WID 54
 #define USER_WID 8
 #define GROUP_WID 8
+#define SUMLN_WID 68
 
 /// @brief output control flags
 #define F_DIRONLY   0x1       ///< turn on direcetory only option
@@ -335,12 +336,26 @@ int main(int argc, char *argv[])
     if (flags & F_SUMMARY) {
       printf("----------------------------------------------------------------------------------------------------\n");
       if (flags & F_DIRONLY) {
-        printf("%d director%s\n", dstat.dirs, (dstat.dirs != 1) ? "ies" : "y");
+        char *summary_line;
+        int summary_line_len = asprintf(&summary_line, "%d director%s\n", dstat.dirs, (dstat.dirs != 1) ? "ies" : "y");
+        if (summary_line_len == -1) {
+          panic("Failed to print summary line.");
+        }
+
+        if (!(flags & F_VERBOSE)) {
+          printf("%-*s", SUMLN_WID, summary_line);
+        } else {
+          char summary_line_limited[SUMLN_WID+1];
+          int summary_line_overflow = (summary_line_len > SUMLN_WID) ? SUMLN_WID : summary_line_len;
+          strncpy(summary_line_limited, summary_line, summary_line_overflow);
+          summary_line_limited[summary_line_overflow] = '\0';
+        }
+        free(summary_line);
+
       } else {
-        int total_size = 0; // should be changed
         char *summary_line;
         int summary_line_len = asprintf(&summary_line,
-          "%d file%s, %d director%s, %d link%s, %d pipe%s, and %d socket%s\n",
+          "%d file%s, %d director%s, %d link%s, %d pipe%s, and %d socket%s",
           dstat.files, (dstat.files != 1) ? "s" : "",
           dstat.dirs, (dstat.dirs != 1) ? "ies" : "y",
           dstat.links, (dstat.links != 1) ? "s" : "",
@@ -349,8 +364,21 @@ int main(int argc, char *argv[])
         if (summary_line_len == -1) {
           panic("Failed to print summary line.");
         }
-        printf("%-68s%14d", summary_line, total_size);
+
+        if (!(flags & F_VERBOSE)) {
+          printf("%-*s", SUMLN_WID, summary_line);
+        } else {
+          char summary_line_limited[SUMLN_WID+1];
+          int summary_line_overflow = (summary_line_len > SUMLN_WID) ? SUMLN_WID : summary_line_len;
+          strncpy(summary_line_limited, suammary_line, summary_line_overflow);
+          summary_line_limited[summary_line_overflow] = '\0';
+
+          int total_size = 0; // should be changed
+          print("%14d", total_size);
+
+        }
         free(summary_line);
+        
       }
       printf("\n");
     }
