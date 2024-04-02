@@ -175,14 +175,14 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       // print user & group
       printf("%s:%s", user, group);
       printf("  ");
-      
+
     }
-
+    free(group);
+    free(user);
+    free(name);
+    
   }
-  free(group);
-  free(user);
-  free(name);
-
+  
 }
 
 
