@@ -324,7 +324,7 @@ int main(int argc, char *argv[])
         printf("%-68s%14d", summary_line, total_size);
         free(summary_line);
       }
-      printf("\n")
+      printf("\n");
     }
 
     tstat.dirs += dstat.dirs;
