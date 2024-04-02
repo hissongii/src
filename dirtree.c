@@ -181,15 +181,18 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     if (entrylist[i].d_type == DT_DIR) {
       stats->dirs += 1;
 
+      // print path and name
       printf("%-*s", NAME_WID, name_limited);
-      printf("  ");
 
-      // print user & group
-      printf("%*s:%-*s", USER_WID, user_limited, GROUP_WID, group_limited);
-      printf("  ");
+      if (flags & F_SUMMARY) {  
+        // print user & group
+        printf("  ");
+        printf("%*s:%-*s", USER_WID, user_limited, GROUP_WID, group_limited);
+
+      }
 
       printf("\n");
-
+      
       // call recursively
       char fullPath[1024];
       snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entrylist[i].d_name);
@@ -197,22 +200,24 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
     } else {
 
-      if (flags & F_DIRONLY) {
-        continue;
-      }
-
       if      (entrylist[i].d_type == DT_REG) { stats->files += 1; }
       else if (entrylist[i].d_type == DT_LNK) { stats->links += 1; }
       else if (entrylist[i].d_type == DT_FIFO) { stats->fifos += 1; }
       else if (entrylist[i].d_type == DT_SOCK) { stats->socks += 1; }
 
+      if (flags & F_DIRONLY) {
+        continue;
+      }
+
       // print path and name
       printf("%-*s", NAME_WID, name_limited);
-      printf("  ");
 
-      // print user & group
-      printf("%*s:%-*s", USER_WID, user_limited, GROUP_WID, group_limited);
-      printf("  ");
+      if (flags & F_SUMMARY) {  
+        // print user & group
+        printf("  ");
+        printf("%*s:%-*s", USER_WID, user_limited, GROUP_WID, group_limited);
+
+      }
 
       printf("\n");
     }
