@@ -124,7 +124,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     count += 1;
   }
   closedir(dir);
-  printf("count: %s", count);
+  printf("count: %d", count);
 
   qsort(entry_ptrs, count, sizeof(struct dirent*), dirent_compare);
 
