@@ -129,7 +129,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   for (int i=0; i<count; i++) {
     // define path and name
     char *name;
-    int name_len = asprintf(&name, "%*s%s\n", depth*2, "", entrylist[i].d_name);
+    int name_len = asprintf(&name, "%*s%s", depth*2, "", entrylist[i].d_name);
     if (name_len == -1) {
       panic("Failed to write path & name.");
     }
@@ -138,10 +138,14 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     struct stat info;
     struct passwd *user_info = getpwuid(info.st_uid);
     struct group *group_info = getgrgid(info.st_gid);
+
+    if (info.st_uid == NULL || info.st_gid == NULL) {
+      panic("Permission Denied.");
+    }
     if (user_info == NULL || group_info == NULL) {
       panic("Failed to get file information.");
     }
-
+    
     char *user;
     char *group;
     int user_len = asprintf(&user, "%s", user_info->pw_name);
