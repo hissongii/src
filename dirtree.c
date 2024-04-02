@@ -228,7 +228,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       char *full_path;
       int full_path_len = asprintf(&full_path, "%s/%s", dn, entrylist[i].d_name);
       if (full_path_len == -1) {
-        panic("Failed to get full path.")
+        panic("Failed to get full path.");
       }
       processDir(full_path, depth+1, stats, flags);
     }
@@ -483,7 +483,7 @@ int main(int argc, char *argv[])
           printf("%-*s", SUMLN_WID, summary_line);
 
           printf("   ");
-          printf("%*d", TOTSZ_WID, dstat.size);
+          printf("%*lld", TOTSZ_WID, dstat.size);
 
         }
         free(summary_line);
