@@ -329,8 +329,9 @@ int main(int argc, char *argv[])
       if (flags & F_VERBOSE) {
         printf("Name                                                        User:Group           Size     Perms Type\n");
       } else {
-        printf("Name");
+        printf("Name\n");
       }
+
       printf("----------------------------------------------------------------------------------------------------\n");
     }
 
