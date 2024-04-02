@@ -138,6 +138,10 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     struct stat info;
     struct passwd *user_info = getpwuid(info.st_uid);
     struct group *group_info = getgrgid(info.st_gid);
+    if (user_info == NULL || group_info == NULL) {
+      panic("Failed to get file information.");
+    }
+
     char *user;
     char *group;
     int user_len = asprintf(&user, "%s", user_info->pw_name);
@@ -162,7 +166,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("  ");
 
       printf("\n");
-      
+
       // call recursively
       char fullPath[1024];
       snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entrylist[i].d_name);
@@ -188,7 +192,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("%8s:%-8s", user, group);
       printf("  ");
 
-      printf("\n")
+      printf("\n");
     }
     free(name);
     free(user);
