@@ -166,6 +166,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         strncat(line, "...", 3);
       } else {
         strncpy(line, name, name_len);
+        line[name_len] = '\0';
         for (int i=0; i<NAME_WID-name_len; i++) {
           strncat(line, " ", 1);
         }
@@ -220,7 +221,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     }
 
     // final. PRINT
-    if (flags & F_VERBOSE) { line[98] = '\0'; }
+    // if (flags & F_VERBOSE) { line[98] = '\0'; }
     printf("%s\n", line);
 
     // ***RECURSIVE CALL***
