@@ -326,7 +326,11 @@ int main(int argc, char *argv[])
     memset(&dstat, 0, sizeof(dstat));
 
     if (flags & F_SUMMARY) {
-      printf("Name                                                        User:Group           Size     Perms Type\n");
+      if (flags & F_VERBOSE) {
+        printf("Name                                                        User:Group           Size     Perms Type\n");
+      } else {
+        printf("Name");
+      }
       printf("----------------------------------------------------------------------------------------------------\n");
     }
 
