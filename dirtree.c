@@ -78,11 +78,8 @@ struct dirent *getNext(DIR *dir)
 /// @retval -1 if a<b
 /// @retval 0  if a==b
 /// @retval 1  if a>b
-static int dirent_compare(const void *a, const void *b)
+static int dirent_compare(struct dirent *e1, struct dirent *e2)
 {
-  struct dirent *e1 = (struct dirent*)a;
-  struct dirent *e2 = (struct dirent*)b;
-
   // if one of the entries is a directory, it comes first
   if (e1->d_type != e2->d_type) {
     if (e1->d_type == DT_DIR) return -1;
@@ -126,7 +123,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   }
   closedir(dir);
 
-  qsort(entry_ptrs, count, sizeof(struct dirent*), dirent_compare());
+  qsort(entry_ptrs, count, sizeof(struct dirent*), dirent_compare);
 
   for (int i=0; i<count; i++) {
     printf("%s\n", entry_ptrs[count]->d_name);
