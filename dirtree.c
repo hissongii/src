@@ -238,24 +238,50 @@ int main(int argc, char *argv[])
   //   - if F_SUMMARY flag set: print summary & update statistics
   memset(&tstat, 0, sizeof(tstat));
   //...
-  // CHANGE ONLY THIS PART
+
   for (int i = 0; i < ndir; i++) {
     struct summary dstat;
     memset(&dstat, 0, sizeof(dstat));
 
     if (flags & F_SUMMARY) {
-      printf("Directory: %s\n", directories[i]);
+      printf("Name                                                        User:Group           Size     Perms Type\n");
+      printf("----------------------------------------------------------------------------------------------------\n");
     }
 
     printf("%s\n", directories[i]);
     processDir(directories[i], 1, &dstat, flags);
+
+    if (flags & F_SUMMARY) {
+      printf("----------------------------------------------------------------------------------------------------\n");
+      if (flags & F_DIRONLY) {
+        printf("%d director%s", dstat.dirs, (dstat.dirs != 1) ? "ies" : "y")
+      } else {
+        printf(
+          "%d file%s, %d director%s, %d link%s, %d pipe%s, and %d socket%s",
+          dstat.files, (dstat.files != 1) ? "s" : "",
+          dstat.dirs, (dstat.dirs != 1) ? "ies" : "y",
+          dstat.links, (dstat.links != 1) ? "s" : "",
+          dstat.fifos, (dstat.fifos != 1) ? "s" : "",
+          dstat.socks, (dstat.socks != 1) ? "s" : ""
+        );
+      }
+      
+    }
+
+    tstat.dirs += dstat.dirs;
+    tstat.fifos += dstat.fifos;
+    tstat.files += dstat.files;
+    tstat.links += dstat.links;
+    tstat.size += dstat.size;
+    tstat.socks += dstat.socks;
+
   }
 
   //
   // print grand total
   //
   if ((flags & F_SUMMARY) && (ndir > 1)) {
-    printf("Analyzed %d directories:\n"
+    printf("Analyzed %d directories:\n"    
            "  total # of files:        %16d\n"
            "  total # of directories:  %16d\n"
            "  total # of links:        %16d\n"
