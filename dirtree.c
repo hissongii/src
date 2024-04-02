@@ -121,13 +121,17 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
   while ((entry = getNext(dir)) != NULL && count < MAX_DIR) {
     entrylist[count] = *entry;
-    printf("%s\n", entrylist[count].d_name);
+    // printf("%s\n", entrylist[count].d_name);
     count += 1;
   }
   closedir(dir);
-  printf("count: %d", count)
-  //qsort(entry_ptrs, count+1, sizeof(struct dirent*), dirent_compare);
 
+  qsort(entrylist, count, sizeof(struct dirent), dirent_compare);
+
+  for (int i=0; i<count; i++) {
+    printf("%s\n", entrylist[count].d_name);
+  }
+  
   // printf("%s\n", entry_ptrs[0]->d_name);
   /*
   for (int i=0; i<count; i++) {
