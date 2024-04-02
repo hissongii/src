@@ -124,6 +124,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     count += 1;
   }
   closedir(dir);
+  printf("count: %s", count);
 
   qsort(entry_ptrs, count, sizeof(struct dirent*), dirent_compare);
 
@@ -134,7 +135,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
       char fullPath[1024];
       snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entry_ptrs[i]->d_name);
-      processDir(fullPath, depth + 1, stats, flags);
+      processDir(fullPath, depth+1, stats, flags);
     } else {
 
       if      (entry_ptrs[i]->d_type == DT_REG) { stats->files += 1; }
