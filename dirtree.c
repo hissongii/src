@@ -185,7 +185,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("  ");
 
       // print user & group
-      printf("%*s:%-*s", USER_WID, user, GROUP_WID, group);
+      printf("%*s:%-*s", USER_WID, user_limited, GROUP_WID, group_limited);
       printf("  ");
 
       printf("\n");
