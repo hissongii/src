@@ -146,6 +146,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       strncpy(name_limited, name, name_len);
       name_limited[name_len] = '\0';
     }
+    free(name);
 
     // define user & group
     struct stat info;
@@ -174,7 +175,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     user_limited[user_overflow] = '\0';
     strncpy(group_limited, group, group_overflow);
     group_limited[group_overflow] = '\0';
-
+    free(user);
+    free(group);
 
     if (entrylist[i].d_type == DT_DIR) {
       stats->dirs += 1;
@@ -209,15 +211,11 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("  ");
 
       // print user & group
-      printf("%*s:%-*s", USER_WID, user, GROUP_WID, group);
+      printf("%*s:%-*s", USER_WID, user_limited, GROUP_WID, group_limited);
       printf("  ");
 
       printf("\n");
     }
-    free(name);
-    free(user);
-    free(group);
-
   }
   
 }
