@@ -23,6 +23,8 @@
 
 #define MAX_DIR 64            ///< maximum number of supported directories
 #define NAME_WID 54
+#define USER_WID 8
+#define GROUP_WID 8
 
 /// @brief output control flags
 #define F_DIRONLY   0x1       ///< turn on direcetory only option
@@ -149,7 +151,6 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     struct stat info;
     struct passwd *user_info = getpwuid(info.st_uid);
     struct group *group_info = getgrgid(info.st_gid);
-
     if (user_info == NULL || group_info == NULL) {
       panic("Failed to get file information.");
     }
@@ -164,7 +165,17 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     if (group_len == -1) {
       panic("Failed to write group.");
     }
-    
+
+    char user_limited[USER_WID+1];
+    char group_limited[GROUP_WID+1];
+    int user_overflow = (user_len > USER_WID) ? USER_WID : user_len;
+    int group_overflow = (group_len > GROUP_WID) ? GROUP_WID : group_len;
+    strncpy(user_limited, user, user_overflow);
+    user_limited[user_overflow] = '\0';
+    strncpy(group_limited, group, group_overflow);
+    group_limited[group_overflow] = '\0';
+
+
     if (entrylist[i].d_type == DT_DIR) {
       stats->dirs += 1;
 
@@ -172,7 +183,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("  ");
 
       // print user & group
-      printf("%8s:%-8s", user, group);
+      printf("%*s:%-*s", USER_WID, user, GROUP_WID, group);
       printf("  ");
 
       printf("\n");
@@ -198,7 +209,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       printf("  ");
 
       // print user & group
-      printf("%8s:%-8s", user, group);
+      printf("%*s:%-*s", USER_WID, user, GROUP_WID, group);
       printf("  ");
 
       printf("\n");
