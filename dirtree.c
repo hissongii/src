@@ -234,7 +234,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
       if (lstat(full_path, &info) == 0) {
         // 3. SIZE
-        int size = info.st_size;
+        int size = (int) info.st_size;
         strncat("%d", size, 10);
         /*
         int size_int = info.st_size;
