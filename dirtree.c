@@ -128,13 +128,34 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   qsort(entrylist, count, sizeof(struct dirent), dirent_compare);
 
   for (int i=0; i<count; i++) {
+    // path and name
+    char *name = NULL;
+    asprintf(&name, "%*s%s\n", depth*2, "", entrylist[i].d_name);
+
+    // user & group
+    struct passwd *user_info = getpwuid(entrylist[i].d_uid);
+    struct group *group_info = getgrgid(entrylist[i].d_gid);
+    char *user = NULL;
+    char *group = NULL;
+    asprintf(&user, "%8s", user_info->pw_name);
+    asprintf(&group, "%-8s", group_info->gr_name);
+
     if (entrylist[i].d_type == DT_DIR) {
       stats->dirs += 1;
-      printf("%*s%s\n", depth*2, "", entrylist[i].d_name);
+      // print path and name
+      if (strlen(name) > 54) { printf("%-51s...", name); }
+      else { printf("%-54s", name); }
+      printf("  ");
 
+      // print user & group
+      printf("%s:%s", user, group);
+      printf("  ");
+
+      // call recursively
       char fullPath[1024];
       snprintf(fullPath, sizeof(fullPath), "%s/%s", dn, entrylist[i].d_name);
       processDir(fullPath, depth+1, stats, flags);
+
     } else {
 
       if (flags & F_DIRONLY) {
@@ -150,6 +171,9 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     }
 
   }
+  free(group);
+  free(user);
+  free(name);
 
 }
 
@@ -260,14 +284,17 @@ int main(int argc, char *argv[])
       if (flags & F_DIRONLY) {
         printf("%d director%s\n", dstat.dirs, (dstat.dirs != 1) ? "ies" : "y");
       } else {
-        printf(
-          "%d file%s, %d director%s, %d link%s, %d pipe%s, and %d socket%s\n",
+        char *summary_line = NULL;
+        int total_size = 0; // should be changed
+        asprintf(&summary_line, "%d file%s, %d director%s, %d link%s, %d pipe%s, and %d socket%s\n",
           dstat.files, (dstat.files != 1) ? "s" : "",
           dstat.dirs, (dstat.dirs != 1) ? "ies" : "y",
           dstat.links, (dstat.links != 1) ? "s" : "",
           dstat.fifos, (dstat.fifos != 1) ? "s" : "",
           dstat.socks, (dstat.socks != 1) ? "s" : ""
         );
+        printf("%-68s%14d", summary_line, total_size);
+        free(summary_line);
       }
       
     }
