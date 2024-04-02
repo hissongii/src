@@ -139,9 +139,6 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     struct passwd *user_info = getpwuid(info.st_uid);
     struct group *group_info = getgrgid(info.st_gid);
 
-    if (info.st_uid == NULL || info.st_gid == NULL) {
-      panic("Permission Denied.");
-    }
     if (user_info == NULL || group_info == NULL) {
       panic("Failed to get file information.");
     }
