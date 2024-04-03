@@ -273,11 +273,12 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       // 5. TYPE
       if      (S_ISDIR(info.st_mode)) { strncat(line, "d", 1); }
       else if (S_ISLNK(info.st_mode)) { strncat(line, "l", 1); }
-      else if (S_IFCHR(info.st_mode)) { strncat(line, "c", 1); }
-      else if (S_IFBLK(info.st_mode)) { strncat(line, "b", 1); }
-      else if (S_IFIFO(info.st_mode)) { strncat(line, "f", 1); }
-      else if (S_IFSOCK(info.st_mode)) { strncat(line, "s", 1); }
-      else { strncat(line, " ", 1); }
+      else if ((info.st_mode & S_IFMT) == S_IFCHR) { strncat(line, "c", 1); }
+      else if ((info.st_mode & S_IFMT) == S_IFBLK) { strncat(line, "b", 1); }
+      else if ((info.st_mode & S_IFMT) == S_IFIFO) { strncat(line, "f", 1); }
+      else if ((info.st_mode & S_IFMT) == S_IFSOCK) { strncat(line, "s", 1); }
+      else { strncat(line, " ", 1); } // 일반 파일을 나타내는 '-' 추가
+
     }
 
     // final. PRINT
