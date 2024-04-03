@@ -478,7 +478,7 @@ int main(int argc, char *argv[])
     if (flags & F_VERBOSE) {
       printf("  total file size:         %16llu\n", tstat.size);
     }
-
+    printf('\n');
   }
 
   //
