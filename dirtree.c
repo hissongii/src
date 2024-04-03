@@ -118,12 +118,10 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
   // ***OPEN***
   DIR *dir = opendir(dn);
-  /*
   if (!dir) {
     fprintf(stderr, "%*sERROR: %s\n", depth * 2, "", strerror(errno));
     return;
   }
-  */
 
   // ***ENUMERATE***
   struct dirent *entry;
@@ -151,7 +149,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     }
 
     if (lstat(full_path, &info) != 0) {
-        panic("Failed to get file stats.");
+      fprintf(stderr, "%*s%s: ERROR: %s\n", depth * 2, "", entrylist[i].d_name, strerror(errno)); // 오류 메시지 출력
+      continue;
     }
 
     if (flags & F_DIRONLY) { if (entrylist[i].d_type != DT_DIR) { continue; } }
