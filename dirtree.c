@@ -188,7 +188,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       }
       free(name);
 
-      printf("  ");
+      strncat(line, "  ", 2);
       
       // 2. USER & GROUP
       struct passwd *user_info = getpwuid(info.st_uid);
@@ -234,7 +234,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       free(user);
       free(group);
 
-      printf("  ");
+      strncat(line, "  ", 2);
 
       // 3. SIZE
       unsigned long long size = (unsigned long long)info.st_size;
