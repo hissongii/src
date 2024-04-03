@@ -243,6 +243,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       char size_str[FILSZ_WID+1];
       int size_str_len = snprintf(size_str, sizeof(size_str), "%llu", size);
 
+      // line[71] ~ line[80], width 10
       if (size_str_len > FILSZ_WID) {
         strncat(line, size_str, FILSZ_WID);
       } else {
@@ -252,8 +253,31 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         strncat(line, size_str, size_str_len);
       }
 
+      strncat(line, " ", 1);
+
       // 4. PERMISSION
+      char perms[10] = "---------";
+      if (filestat.st_mode & S_IRUSR) perms[0] = 'r';
+      if (filestat.st_mode & S_IWUSR) perms[1] = 'w';
+      if (filestat.st_mode & S_IXUSR) perms[2] = 'x';
+      if (filestat.st_mode & S_IRGRP) perms[3] = 'r';
+      if (filestat.st_mode & S_IWGRP) perms[4] = 'w';
+      if (filestat.st_mode & S_IXGRP) perms[5] = 'x';
+      if (filestat.st_mode & S_IROTH) perms[6] = 'r';
+      if (filestat.st_mode & S_IWOTH) perms[7] = 'w';
+      if (filestat.st_mode & S_IXOTH) perms[8] = 'x';
+      strncat(line, perms, PERM_WID);
+
+      strncat(line, "  ", 1);
+
       // 5. TYPE
+      char type = '?';
+      if (S_ISDIR(filestat.st_mode)) type = 'd';
+      else if (S_ISREG(filestat.st_mode)) type = 'f';
+      else if (S_ISLNK(filestat.st_mode)) type = 'l';
+      else if (S_ISSOCK(filestat.st_mode)) type = 's';
+      else if (S_ISFIFO(filestat.st_mode)) type = 'p';
+      strncat(line, type, 1);
 
     }
 
