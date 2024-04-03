@@ -119,6 +119,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   // ***OPEN***
   DIR *dir = opendir(dn);
   if (!dir) {
+    // ERROR HANDLING 1
     fprintf(stderr, "%*sERROR: %s\n", depth * 2, "", strerror(errno));
     return;
   }
@@ -156,7 +157,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     else if (entrylist[i].d_type == DT_SOCK) { stats->socks += 1; }
 
     if (flags & F_DIRONLY) { if (entrylist[i].d_type != DT_DIR) { continue; } }
-    
+
     // ***PRINT LINE***
     char line[1024];
 
@@ -164,11 +165,6 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     char *name;
     int name_len = asprintf(&name, "%*s%s", depth*2, "", entrylist[i].d_name);
     if (name_len == -1) { panic("Failed to write path & name."); }
-
-    if (lstat(full_path, &info) != 0) {
-      fprintf(stderr, "%*s%s%*s%s\n", depth*2, "", entrylist[i].d_name, NAME_WID+2-name_len, "", strerror(errno));
-      continue;
-    }
 
     if (!(flags & F_VERBOSE)) {
       strncpy(line, name, name_len);
@@ -192,6 +188,12 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       
       // line[54] ~ line[55]
       strncat(line, "  ", 2);
+
+      if (lstat(full_path, &info) != 0) {
+        // ERROR HANDLING 2
+        fprintf(stderr, "%*s%s%*s%s\n", depth*2, "", entrylist[i].d_name, NAME_WID+2-name_len, "", strerror(errno));
+        continue;
+      }
       
       // 2. USER & GROUP
       struct passwd *user_info = getpwuid(info.st_uid);
