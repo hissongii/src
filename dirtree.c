@@ -257,26 +257,26 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
       // 4. PERMISSION
       char perms[10] = "---------";
-      if (filestat.st_mode & S_IRUSR) perms[0] = 'r';
-      if (filestat.st_mode & S_IWUSR) perms[1] = 'w';
-      if (filestat.st_mode & S_IXUSR) perms[2] = 'x';
-      if (filestat.st_mode & S_IRGRP) perms[3] = 'r';
-      if (filestat.st_mode & S_IWGRP) perms[4] = 'w';
-      if (filestat.st_mode & S_IXGRP) perms[5] = 'x';
-      if (filestat.st_mode & S_IROTH) perms[6] = 'r';
-      if (filestat.st_mode & S_IWOTH) perms[7] = 'w';
-      if (filestat.st_mode & S_IXOTH) perms[8] = 'x';
+      if (info.st_mode & S_IRUSR) perms[0] = 'r';
+      if (info.st_mode & S_IWUSR) perms[1] = 'w';
+      if (info.st_mode & S_IXUSR) perms[2] = 'x';
+      if (info.st_mode & S_IRGRP) perms[3] = 'r';
+      if (info.st_mode & S_IWGRP) perms[4] = 'w';
+      if (info.st_mode & S_IXGRP) perms[5] = 'x';
+      if (info.st_mode & S_IROTH) perms[6] = 'r';
+      if (info.st_mode & S_IWOTH) perms[7] = 'w';
+      if (info.st_mode & S_IXOTH) perms[8] = 'x';
       strncat(line, perms, PERM_WID);
 
       strncat(line, "  ", 1);
 
       // 5. TYPE
       char type = '?';
-      if (S_ISDIR(filestat.st_mode)) type = 'd';
-      else if (S_ISREG(filestat.st_mode)) type = 'f';
-      else if (S_ISLNK(filestat.st_mode)) type = 'l';
-      else if (S_ISSOCK(filestat.st_mode)) type = 's';
-      else if (S_ISFIFO(filestat.st_mode)) type = 'p';
+      if      (S_ISDIR(info.st_mode)) type = 'd';
+      else if (S_ISREG(info.st_mode)) type = 'f';
+      else if (S_ISLNK(info.st_mode)) type = 'l';
+      else if (S_ISSOCK(info.st_mode)) type = 's';
+      else if (S_ISFIFO(info.st_mode)) type = 'p';
       strncat(line, type, 1);
 
     }
