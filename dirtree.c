@@ -251,7 +251,6 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         }
         strncat(line, size_str, size_str_len);
       }
-      free(full_path);
 
       // 4. PERMISSION
       // 5. TYPE
@@ -265,6 +264,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     if (entrylist[i].d_type == DT_DIR) {
       processDir(full_path, depth+1, stats, flags);
     }
+    free(full_path);
 
   }
   
