@@ -148,8 +148,6 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       panic("Failed to get full path.");
     }
 
-    if (flags & F_DIRONLY) { if (entrylist[i].d_type != DT_DIR) { continue; } }
-
     // ***UPDATE STATISTICS***
     if      (entrylist[i].d_type == DT_DIR) { stats->dirs += 1; }
     else if (entrylist[i].d_type == DT_REG) { stats->files += 1; }
@@ -157,6 +155,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     else if (entrylist[i].d_type == DT_FIFO) { stats->fifos += 1; }
     else if (entrylist[i].d_type == DT_SOCK) { stats->socks += 1; }
 
+    if (flags & F_DIRONLY) { if (entrylist[i].d_type != DT_DIR) { continue; } }
+    
     // ***PRINT LINE***
     char line[1024];
 
