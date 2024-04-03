@@ -240,8 +240,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       unsigned long long size = (unsigned long long)info.st_size;
       stats->size += size;
 
-      char size_str[FILSZ_WID + 1];
-      int size_str_len = snprintf(size_str, sizeof(size_str), "%*llu", FILSZ_WID, size);
+      char size_str[FILSZ_WID+1];
+      int size_str_len = snprintf(size_str, sizeof(size_str), "%llu", size);
 
       if (size_str_len > FILSZ_WID) {
         strncat(line, size_str, FILSZ_WID);
