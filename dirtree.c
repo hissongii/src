@@ -147,6 +147,10 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       panic("Failed to get full path.");
     }
 
+    if (lstat(full_path, &info) != 0) {
+        panic("Failed to get file stats.");
+    }
+
     if (flags & F_DIRONLY) { if (entrylist[i].d_type != DT_DIR) { continue; } }
 
     // ***UPDATE STATISTICS***
@@ -232,30 +236,25 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
       printf("  ");
 
-      if (lstat(full_path, &info) == 0) {
-        // 3. SIZE
-        int size = (int) info.st_size;
-        strncat("%d", size, 10);
-        /*
-        int size_int = info.st_size;
-        stats->size += size_int;
-        char size[FILSZ_WID+1];
-        int size_len = snprintf(size, sizeof(size), "%d", size_int);
-        if (size_len > FILSZ_WID) {
-          strncat(line, size, FILSZ_WID);
-        } else {
-          for (int i=0; i<FILSZ_WID-size_len; i++) {
-            strncat(line, " ", 1);
-          }
-          strncat(line, size, size_len);  
-        }
-        
-        // 4. PERMISSION
-        // 5. TYPE
-        */
+      // 3. SIZE
+      unsigned long long size = (unsigned long long)info.st_size;
+      stats->size += size;
+
+      char size_str[FILSZ_WID + 1];
+      int size_str_len = snprintf(size_str, sizeof(size_str), "%*llu", FILSZ_WID, size);
+
+      if (size_str_len > FILSZ_WID) {
+        strncat(line, size_str, FILSZ_WID);
       } else {
-        panic("Failed to get file stats.");
+        for (int i=0; i<FILSZ_WID-size_str_len; i++) {
+          strncat(line, " ", 1);
+        }
+        strcat(line, size_str, size_str_len);
       }
+      free(full_path);
+
+      // 4. PERMISSION
+      // 5. TYPE
 
     }
 
