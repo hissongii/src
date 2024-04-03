@@ -119,7 +119,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
   // ***OPEN***
   DIR *dir = opendir(dn);
   if (!dir) {
-    panic("Failed to open directory.");
+    fprintf(stderr, "%*sERROR: %s\n", depth * 2, "", strerror(errno));
+    return;
   }
 
   // ***ENUMERATE***
@@ -187,7 +188,8 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         }
       }
       free(name);
-
+      
+      // line[54] ~ line[55]
       strncat(line, "  ", 2);
       
       // 2. USER & GROUP
@@ -209,8 +211,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         panic("Failed to write group.");
       }
 
-      // line[54] ~ line[70], width 8+1+8 = 17
-      // (1) user: line[54] ~ line[61], width 8
+      // line[56] ~ line[72], width 8+1+8 = 17
       if (user_len > USER_WID) {
         strncat(line, user, USER_WID);
       } else {
@@ -219,10 +220,9 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         }
         strncat(line, user, user_len);
       }
-      // (2) ":": line[62], width 1
+
       strncat(line, ":", 1);
 
-      // (3) group: line[63] ~ line[70], width 8
       if (group_len > GROUP_WID) {
         strncat(line, group, GROUP_WID);
       } else {
@@ -234,6 +234,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       free(user);
       free(group);
 
+      // line[73] ~ line[74]
       strncat(line, "  ", 2);
 
       // 3. SIZE
@@ -243,7 +244,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       char size_str[FILSZ_WID+1];
       int size_str_len = snprintf(size_str, sizeof(size_str), "%llu", size);
 
-      // line[71] ~ line[80], width 10
+      // line[75] ~ line[84], width 10
       if (size_str_len > FILSZ_WID) {
         strncat(line, size_str, FILSZ_WID);
       } else {
@@ -253,9 +254,11 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         strncat(line, size_str, size_str_len);
       }
 
+      // line[85]
       strncat(line, " ", 1);
 
       // 4. PERMISSION
+      // line[86] ~ line[94], width 9
       char perms[10] = "---------";
       if (info.st_mode & S_IRUSR) perms[0] = 'r';
       if (info.st_mode & S_IWUSR) perms[1] = 'w';
@@ -268,9 +271,11 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       if (info.st_mode & S_IXOTH) perms[8] = 'x';
       strncat(line, perms, PERM_WID);
 
+      // line[95]~line[96]
       strncat(line, "  ", 2);
 
       // 5. TYPE
+      // line[97]
       if      (S_ISDIR(info.st_mode)) { strncat(line, "d", 1); }
       else if (S_ISLNK(info.st_mode)) { strncat(line, "l", 1); }
       else if ((info.st_mode & S_IFMT) == S_IFCHR) { strncat(line, "c", 1); }
