@@ -161,7 +161,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     else if (entrylist[i].d_type == DT_SOCK) { stats->socks += 1; }
 
     // ***PRINT LINE***
-    char line[99];
+    char line[1024];
 
     // 1. NAME
     char *name;
