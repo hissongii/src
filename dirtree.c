@@ -457,7 +457,7 @@ int main(int argc, char *argv[])
         free(summary_line);
         
       }
-      printf("\n");
+      printf("\n\n");
     }
 
     tstat.dirs += dstat.dirs;
@@ -473,7 +473,7 @@ int main(int argc, char *argv[])
   // print grand total
   //
   if ((flags & F_SUMMARY) && (ndir > 1)) {
-    printf("Analyzed %d directories:\n"    
+    printf("\nAnalyzed %d directories:\n"    
            "  total # of files:        %16d\n"
            "  total # of directories:  %16d\n"
            "  total # of links:        %16d\n"
@@ -484,7 +484,6 @@ int main(int argc, char *argv[])
     if (flags & F_VERBOSE) {
       printf("  total file size:         %16llu\n", tstat.size);
     }
-    printf("\n");
   }
 
   //
