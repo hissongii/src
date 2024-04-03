@@ -118,10 +118,12 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
 
   // ***OPEN***
   DIR *dir = opendir(dn);
+  /*
   if (!dir) {
     fprintf(stderr, "%*sERROR: %s\n", depth * 2, "", strerror(errno));
     return;
   }
+  */
 
   // ***ENUMERATE***
   struct dirent *entry;
