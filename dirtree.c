@@ -249,7 +249,7 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
         for (int i=0; i<FILSZ_WID-size_str_len; i++) {
           strncat(line, " ", 1);
         }
-        strcat(line, size_str, size_str_len);
+        strncat(line, size_str, size_str_len);
       }
       free(full_path);
 
