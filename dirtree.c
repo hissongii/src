@@ -148,11 +148,6 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       panic("Failed to get full path.");
     }
 
-    if (lstat(full_path, &info) != 0) {
-      fprintf(stderr, "%*s%s: ERROR: %s\n", depth * 2, "", entrylist[i].d_name, strerror(errno)); // 오류 메시지 출력
-      continue;
-    }
-
     if (flags & F_DIRONLY) { if (entrylist[i].d_type != DT_DIR) { continue; } }
 
     // ***UPDATE STATISTICS***
@@ -169,6 +164,11 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
     char *name;
     int name_len = asprintf(&name, "%*s%s", depth*2, "", entrylist[i].d_name);
     if (name_len == -1) { panic("Failed to write path & name."); }
+
+    if (lstat(full_path, &info) != 0) {
+      fprintf(stderr, "%*s%s%*s%s\n", depth*2, "", entrylist[i].d_name, NAME_WID+2-name_len, "", strerror(errno));
+      continue;
+    }
 
     if (!(flags & F_VERBOSE)) {
       strncpy(line, name, name_len);
