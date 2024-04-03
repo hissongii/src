@@ -186,14 +186,26 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       }
       free(name);
       
+      if (lstat(full_path, &info) != 0) {
+        // ERROR HANDLING 2
+        if (name_len > NAME_WID) {
+          strncpy(line, name, NAME_WID-3);
+          line[NAME_WID-3] = '\0';
+          strncat(line, "...", 3);
+          fprintf(stderr, "%s%s%s\n", line, "  ", strerror(errno));
+
+        } else {
+          strncpy(line, name, name_len);
+          line[name_len] = '\0';
+          fprintf(stderr, "%s%*s%s\n", line, NAME_WID-name_len, "", strerror(errno));
+        }
+        continue;
+      }
+
       // line[54] ~ line[55]
       strncat(line, "  ", 2);
 
-      if (lstat(full_path, &info) != 0) {
-        // ERROR HANDLING 2
-        fprintf(stderr, "%*s%s%*s%s\n", depth*2, "", entrylist[i].d_name, NAME_WID+2-name_len, "", strerror(errno));
-        continue;
-      }
+      
       
       // 2. USER & GROUP
       struct passwd *user_info = getpwuid(info.st_uid);
