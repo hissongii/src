@@ -268,17 +268,16 @@ void processDir(const char *dn, unsigned int depth, struct summary *stats, unsig
       if (info.st_mode & S_IXOTH) perms[8] = 'x';
       strncat(line, perms, PERM_WID);
 
-      strncat(line, "  ", 1);
+      strncat(line, "  ", 2);
 
       // 5. TYPE
-      char type = '?';
-      if      (S_ISDIR(info.st_mode)) type = 'd';
-      else if (S_ISREG(info.st_mode)) type = 'f';
-      else if (S_ISLNK(info.st_mode)) type = 'l';
-      else if (S_ISSOCK(info.st_mode)) type = 's';
-      else if (S_ISFIFO(info.st_mode)) type = 'p';
-      strncat(line, type, 1);
-
+      if      (S_ISDIR(info.st_mode)) { strncat(line, "d", 1); }
+      else if (S_ISLNK(info.st_mode)) { strncat(line, "l", 1); }
+      else if (S_IFCHR(info.st_mode)) { strncat(line, "c", 1); }
+      else if (S_IFBLK(info.st_mode)) { strncat(line, "b", 1); }
+      else if (S_IFIFO(info.st_mode)) { strncat(line, "f", 1); }
+      else if (S_IFSOCK(info.st_mode)) { strncat(line, "s", 1); }
+      else { strncat(line, " ", 1); }
     }
 
     // final. PRINT
