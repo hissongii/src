@@ -256,21 +256,18 @@ void mm_init(FreelistPolicy fp)
   // Initialize the data segment
   ds_allocate(0x200000);  // Assuming the given configuration size
 
-  // Adjust pointers for the initial and end sentinel blocks
-  heap_start = ds_heap_start + 32;  // Offset to skip the initial sentinel block space
-  heap_end = ds_heap_brk - 32;      // Reserve space for the end sentinel block
+  // 센티넬 블록 설정
+  PUT(ds_heap_start, PACK(0, 1)); // 초기 센티넬 블록 헤더
+  PUT(ds_heap_start + 8, PACK(0, 1)); // 초기 센티넬 블록 푸터
+  PUT(ds_heap_end - 16, PACK(0, 1)); // 끝 센티넬 블록 헤더
+  PUT(ds_heap_end - 8, PACK(0, 1)); // 끝 센티넬 블록 푸터
 
-  // Place initial sentinel block at the very beginning of the heap
-  PUT(ds_heap_start, PACK(0, 1)); // Header for initial sentinel block
-  PUT(ds_heap_start + 8, PACK(0, 1)); // Footer for initial sentinel block
+  // 로그를 통한 확인
+  LOG(1, "Data segment initialized from %p to %p", ds_heap_start, ds_heap_end);
 
-  // Place end sentinel block at the very end of the heap
-  PUT(heap_end, PACK(0, 1));  // Header for end sentinel block
-  PUT(heap_end + 8, PACK(0, 1));  // Footer for end sentinel block
-
-  // Set the rest of the heap as a large free block
-  PUT(heap_start, PACK(heap_end - heap_start, 0));  // Header for the free block
-  PUT(heap_end - 8, PACK(heap_end - heap_start, 0));  // Footer for the free block
+  // 힙 시작과 끝 설정
+  heap_start = ds_heap_start + 16;  // 초기 센티넬 블록 다음
+  heap_end = ds_heap_end - 16;      // 끝 센티넬 블록 전
 
   mm_initialized = 1;
 
