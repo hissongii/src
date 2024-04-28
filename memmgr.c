@@ -263,7 +263,7 @@ void mm_init(FreelistPolicy fp)
   PUT(ds_heap_brk - 8, PACK(0, 1)); // 끝 센티넬 블록 푸터
 
   // 로그를 통한 확인
-  LOG(1, "Data segment initialized from %p to %p", ds_heap_start, ds_heap_end);
+  LOG(1, "Data segment initialized from %p to %p", ds_heap_start, ds_heap_brk);
 
   // 힙 시작과 끝 설정
   heap_start = ds_heap_start + 16;  // 초기 센티넬 블록 다음
