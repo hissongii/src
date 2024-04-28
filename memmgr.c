@@ -274,8 +274,6 @@ void mm_init(FreelistPolicy fp)
   mm_initialized = 1;
   */
   PUT(heap_start + 1*WSIZE, PACK(DSIZE, 1));
-  PUT(heap_start + 2*WSIZE, PACK(DSIZE, 1));
-  PUT(heap_start + 3*WSIZE, PACK(0, 1));
   mm_initialized = 1;
 }
 
