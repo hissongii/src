@@ -253,30 +253,18 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
-  /*
-  // Extend initial heap space by a minimal operational size
-  if (ds_sbrk(2 * DSIZE) == (void *)-1) {
-      PANIC("Failed to extend heap.");
-  }
-
-  // Set logical heap boundaries
+  // Initialize heap
+  ds_sbrk(2 * DSIZE);  // Extend heap by a minimal operational size
   heap_start = ds_heap_start;
   heap_end = ds_heap_start + 2 * DSIZE;
 
-  // Initialize the heap with a sentinel block at the start
-  PUT(heap_start, PACK(0, 1)); // Sentinel header at the start of the heap
-  PUT(heap_start + WSIZE, PACK(0, 1)); // Sentinel footer immediately following the header
+  // Set up initial sentinel block
+  PUT(heap_start, PACK(0, 1));  // Sentinel header at heap start
+  PUT(heap_start + WSIZE, PACK(0, 1));  // Sentinel footer immediately following header
+  heap_end = heap_start + DSIZE;  // Adjust heap end
 
-  // Update the heap end to the end of the sentinel block
-  heap_end = heap_start + DSIZE;
+  mm_initialized = 1;
 
-  // Heap is initialized
-  mm_initialized = 1;
-  */
-  PUT(heap_start + 1*WSIZE, PACK(DSIZE, 1));
-  PUT(heap_start + 2*WSIZE, PACK(DSIZE, 1));
-  PUT(heap_start + 3*WSIZE, PACK(0, 1));
-  mm_initialized = 1;
 }
 
 
