@@ -253,16 +253,20 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
-  // Extend initial heap space
-  // 힙의 논리적 시작과 끝 설정
+  // Extend initial heap space by a minimal operational size
+  if (ds_sbrk(2 * DSIZE) == (void *)-1) {
+      PANIC("Failed to extend heap.");
+  }
+
+  // Set logical heap boundaries
   heap_start = ds_heap_start;
-  heap_end = heap_start;  // 초기에는 힙의 끝이 시작 지점과 같습니다.
+  heap_end = ds_heap_start + 2 * DSIZE;
 
-  // 센티넬 블록 설정
-  PUT(heap_start, PACK(0, 1));  // 초기 센티넬 블록의 헤더
-  PUT(heap_start + WSIZE, PACK(0, 1));  // 초기 센티넬 블록의 푸터
+  // Initialize the heap with a sentinel block at the start
+  PUT(heap_start, PACK(0, 1)); // Sentinel header at the start of the heap
+  PUT(heap_start + WSIZE, PACK(0, 1)); // Sentinel footer immediately following the header
 
-  // 힙 끝을 센티넬 블록의 끝으로 이동
+  // Update the heap end to the end of the sentinel block
   heap_end = heap_start + DSIZE;
 
   // Heap is initialized
