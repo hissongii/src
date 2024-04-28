@@ -253,23 +253,29 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
-  // Extend initial heap space
-  void *requested_space = ds_sbrk(0x2000000); // Aligning to the configuration size
-  if (requested_space == (void *)-1) {
-      PANIC("Failed to extend heap initially");
-  }
+  // Set the logical heap start and end
+
+  size_t initial_heap_size = 0x2000000; // For example, 32MB
+  ds_allocate(initial_heap_size);
 
   heap_start = ds_heap_start;
-  heap_end = (char *)heap_start + 0x2000000; // Setup the initial heap size to the requested data segment size
+  heap_end = ds_heap_brk; // Initially set to the start, adjust with ds_sbrk()
 
-  // Create an initial empty block as a sentinel at the beginning of the heap
-  PUT(heap_start, PACK(0, 1)); // Sentinel block header
-  PUT(heap_start + WSIZE, PACK(0, 1)); // Sentinel block footer
+  // Optionally, extend the heap initially if more space is needed right away
+  if (ds_sbrk(initial_heap_size) == (void *)-1) {
+    PANIC("Failed to extend heap during initialization");
+  }
 
-  // Move heap_end to just after the initial sentinel block
-  heap_end = heap_start + DSIZE;
+  // Initialize the heap with a sentinel block
+  PUT(heap_start, PACK(0, 1)); // Header for sentinel block at the heap start
+  PUT(heap_start + WSIZE, PACK(0, 1)); // Footer for sentinel block
 
+  // Update the heap_end after setting up the initial block
+  heap_end = heap_start + 2 * WSIZE;
+
+  LOG(1, "Memory manager initialized: heap starts at %p, ends at %p", heap_start, heap_end);
   mm_initialized = 1;
+
 
 }
 
