@@ -142,6 +142,8 @@ static FreelistPolicy freelist_policy  = 0;            ///< free list management
 //
 #define WSIZE       sizeof(void*)
 #define DSIZE       (2 * WSIZE)
+#define NEXT_LIST_GET(p)  (*(void **)(p + WSIZE))
+#define PREV_LIST_GET(p)  (*(void **)(p + 2*WSIZE))
 /// @}
 
 
