@@ -271,7 +271,6 @@ void mm_init(FreelistPolicy fp)
   PUT(heap_end - WSIZE, PACK(0, 1));  // Sentinel header immediately before the footer
 
   mm_initialized = 1;
-  mm_check();
 
 }
 
