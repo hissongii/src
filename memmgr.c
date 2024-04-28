@@ -253,23 +253,25 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
-  // Extend initial heap space by a minimal operational size
-  if (ds_sbrk(2 * DSIZE) == (void *)-1) {
-      PANIC("Failed to extend heap.");
-  }
+  // Initialize the data segment
+  ds_allocate(0x200000);  // Assuming the given configuration size
 
-  // Set logical heap boundaries
-  heap_start = ds_heap_start;
-  heap_end = ds_heap_start + 2 * DSIZE;
+  // Adjust pointers for the initial and end sentinel blocks
+  heap_start = ds_heap_start + 32;  // Offset to skip the initial sentinel block space
+  heap_end = ds_heap_brk - 32;      // Reserve space for the end sentinel block
 
-  // Initialize the heap with a sentinel block at the start
-  PUT(heap_start, PACK(0, 1)); // Sentinel header at the start of the heap
-  PUT(heap_start + WSIZE, PACK(0, 1)); // Sentinel footer immediately following the header
+  // Place initial sentinel block at the very beginning of the heap
+  PUT(ds_heap_start, PACK(0, 1)); // Header for initial sentinel block
+  PUT(ds_heap_start + 8, PACK(0, 1)); // Footer for initial sentinel block
 
-  // Update the heap end to the end of the sentinel block
-  heap_end = heap_start + DSIZE;
+  // Place end sentinel block at the very end of the heap
+  PUT(heap_end, PACK(0, 1));  // Header for end sentinel block
+  PUT(heap_end + 8, PACK(0, 1));  // Footer for end sentinel block
 
-  // Heap is initialized
+  // Set the rest of the heap as a large free block
+  PUT(heap_start, PACK(heap_end - heap_start, 0));  // Header for the free block
+  PUT(heap_end - 8, PACK(heap_end - heap_start, 0));  // Footer for the free block
+
   mm_initialized = 1;
 
 }
