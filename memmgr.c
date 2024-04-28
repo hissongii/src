@@ -253,8 +253,22 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
+  // Extend initial heap space
+  ds_heap_brk = ds_sbrk(2*DSIZE); // Allocate some initial space
+  if (ds_heap_brk == (void *)-1) {
+      PANIC("Failed to extend heap");
+  }
 
+  heap_start = ds_heap_start;
+  heap_end = heap_start + 2*DSIZE; // Adjust heap_end to the new break point
+
+  // Create an initial empty block as a sentinel
+  PUT(heap_start, PACK(0, 1)); // Header
+  PUT(heap_start + WSIZE, PACK(0, 1)); // Footer
+
+  // Heap is initialized
   mm_initialized = 1;
+
 }
 
 
