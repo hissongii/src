@@ -281,7 +281,7 @@ static void* bf_get_free_block_implicit(size_t size)
   //
   // TODO
   //
-
+  /*
   char *bp;
   void *best_fit = NULL;
   size_t smallest_diff = ~0;
@@ -297,6 +297,8 @@ static void* bf_get_free_block_implicit(size_t size)
   }
 
   return best_fit;
+  */
+  return NULL;
 }
 
 
