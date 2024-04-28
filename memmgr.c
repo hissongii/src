@@ -313,11 +313,12 @@ static void* bf_get_free_block_explicit(size_t size)
   //
   // TODO
   //
+  /*
   char *bp;
   void *best_fit = NULL;
   size_t smallest_diff = ~0;
   
-  for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+  for (bp = heap_list; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
     if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp)) >= size)) {
       size_t diff = GET_SIZE(HDRP(bp)) - size;
       if (diff < smallest_diff) {
@@ -328,6 +329,8 @@ static void* bf_get_free_block_explicit(size_t size)
   }
 
   return best_fit;
+  */
+  return NULL;
 }
 
 
@@ -340,6 +343,7 @@ void* mm_malloc(size_t size)
   //
   // TODO
   //
+  /*
   size_t newsize = ALIGN(size + SIZE_T_SIZE);
   void *bp = bf_get_free_block_implicit(newsize);
 
@@ -347,7 +351,7 @@ void* mm_malloc(size_t size)
     place(bp, newsize);
     return bp;
   }
-
+  */
   return NULL;
 }
 
