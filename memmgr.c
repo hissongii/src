@@ -140,8 +140,8 @@ static FreelistPolicy freelist_policy  = 0;            ///< free list management
 //
 // TODO: add more macros as needed
 //
-#define WSIZE       sizeof(void*)
-#define DSIZE       (2 * WSIZE)
+#define WSIZE       8
+#define DSIZE       16
 #define NEXT_LIST_GET(p)  (*(void **)(p + WSIZE))
 #define PREV_LIST_GET(p)  (*(void **)(p + 2*WSIZE))
 /// @}
@@ -273,9 +273,10 @@ void mm_init(FreelistPolicy fp)
   // Heap is initialized
   mm_initialized = 1;
   */
-  PUT(heap_start, PACK(0, 1));
+  PUT(heap_start + 1*WSIZE, PACK(DSIZE, 1));
+  PUT(heap_start + 2*WSIZE, PACK(DSIZE, 1));
+  PUT(heap_start + 3*WSIZE, PACK(0, 1));
   mm_initialized = 1;
-  
 }
 
 
