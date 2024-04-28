@@ -249,7 +249,16 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
+  ds_heap_brk = ds_heap_start;  // Set initial heap break to start of data segment
+  heap_start = ds_heap_start;
+  heap_end = ds_heap_start;  // Initially, heap_end is at start, grows with sbrk.
 
+  // Create an initial empty block as a sentinel
+  PUT(heap_start, PACK(0, 1)); // Header
+  PUT(heap_start + WSIZE, PACK(0, 1)); // Footer
+
+  // Move heap_end to just after the initial block
+  heap_end = heap_start + DSIZE;
   //
   // heap is initialized
   //
@@ -271,7 +280,21 @@ static void* bf_get_free_block_implicit(size_t size)
   // TODO
   //
 
-  return NULL;
+  char *bp;
+  void *best_fit = NULL;
+  size_t smallest_diff = ~0;
+  
+  for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+    if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp)) >= size)) {
+      size_t diff = GET_SIZE(HDRP(bp)) - size;
+      if (diff < smallest_diff) {
+        best_fit = bp;
+        smallest_diff = diff;
+      }
+    }
+  }
+
+  return best_fit;
 }
 
 
@@ -288,8 +311,21 @@ static void* bf_get_free_block_explicit(size_t size)
   //
   // TODO
   //
+  char *bp;
+  void *best_fit = NULL;
+  size_t smallest_diff = ~0;
+  
+  for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+    if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp)) >= size)) {
+      size_t diff = GET_SIZE(HDRP(bp)) - size;
+      if (diff < smallest_diff) {
+        best_fit = bp;
+        smallest_diff = diff;
+      }
+    }
+  }
 
-  return NULL;
+  return best_fit;
 }
 
 
@@ -302,6 +338,13 @@ void* mm_malloc(size_t size)
   //
   // TODO
   //
+  size_t newsize = ALIGN(size + SIZE_T_SIZE);
+  void *bp = bf_get_free_block_implicit(newsize);
+
+  if (bp != NULL) {
+    place(bp, newsize);
+    return bp;
+  }
 
   return NULL;
 }
@@ -333,8 +376,26 @@ void* mm_realloc(void *ptr, size_t size)
   //
   // TODO
   //
+  if (ptr == NULL) {
+    return mm_malloc(size);
+  }
 
-  return NULL;
+  if (size == 0) {
+    mm_free(ptr);
+    return NULL;
+  }
+
+  void *newptr = mm_malloc(size);
+  if (newptr == NULL) {
+    return NULL;
+  }
+
+  size_t oldsize = GET_SIZE(HDRP(ptr));
+  if (size < oldsize) oldsize = size;
+  memcpy(newptr, ptr, oldsize);
+  mm_free(ptr);
+
+  return newptr;
 }
 
 
@@ -347,7 +408,10 @@ void mm_free(void *ptr)
   //
   // TODO
   //
-  
+  size_t size = GET_SIZE(HDRP(ptr));
+  PUT(HDRP(ptr), PACK(size, 0));
+  PUT(FTRP(ptr), PACK(size, 0));
+  coalesce(ptr);
 }
 
 
