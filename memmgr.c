@@ -273,7 +273,7 @@ void mm_init(FreelistPolicy fp)
   // Heap is initialized
   mm_initialized = 1;
   */
-  PUT(heap_start + 1*WSIZE, PACK(DSIZE, 1));
+  PUT(heap_start, PACK(DSIZE, 1));
   mm_initialized = 1;
 }
 
