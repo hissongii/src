@@ -367,11 +367,14 @@ void* mm_calloc(size_t nmemb, size_t size)
   //
   // calloc is simply malloc() followed by memset()
   //
+  /*
   void *payload = mm_malloc(nmemb * size);
 
   if (payload != NULL) memset(payload, 0, nmemb * size);
 
   return payload;
+  */
+  return NULL;
 }
 
 
@@ -384,6 +387,7 @@ void* mm_realloc(void *ptr, size_t size)
   //
   // TODO
   //
+  /*
   if (ptr == NULL) {
     return mm_malloc(size);
   }
@@ -403,7 +407,8 @@ void* mm_realloc(void *ptr, size_t size)
   memcpy(newptr, ptr, oldsize);
   mm_free(ptr);
 
-  return newptr;
+  return newptr;  */
+  return NULL;
 }
 
 
@@ -416,10 +421,13 @@ void mm_free(void *ptr)
   //
   // TODO
   //
+  /*
   size_t size = GET_SIZE(HDRP(ptr));
   PUT(HDRP(ptr), PACK(size, 0));
   PUT(FTRP(ptr), PACK(size, 0));
   coalesce(ptr);
+    */
+  return NULL;
 }
 
 
