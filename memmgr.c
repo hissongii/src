@@ -253,19 +253,7 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
-  ds_heap_brk = ds_heap_start;  // Set initial heap break to start of data segment
-  heap_start = ds_heap_start;
-  heap_end = ds_heap_start;  // Initially, heap_end is at start, grows with sbrk.
 
-  // Create an initial empty block as a sentinel
-  PUT(heap_start, PACK(0, 1)); // Header
-  PUT(heap_start + WSIZE, PACK(0, 1)); // Footer
-
-  // Move heap_end to just after the initial block
-  heap_end = heap_start + DSIZE;
-  //
-  // heap is initialized
-  //
   mm_initialized = 1;
 }
 
