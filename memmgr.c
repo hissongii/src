@@ -140,6 +140,8 @@ static FreelistPolicy freelist_policy  = 0;            ///< free list management
 //
 // TODO: add more macros as needed
 //
+#define WSIZE       sizeof(void*)
+#define DSIZE       (2 * WSIZE)
 /// @}
 
 
