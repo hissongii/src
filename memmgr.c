@@ -254,7 +254,8 @@ void mm_init(FreelistPolicy fp)
   //
   // TODO
   // Initialize heap
-  ds_sbrk(2 * DSIZE);  // Extend heap by a minimal operational size
+  void *extend_result = ds_sbrk(2 * DSIZE);
+  if (extend_result == (void *)-1) PANIC("Failed to extend heap.");
   heap_start = ds_heap_start;
   heap_end = ds_heap_start + 2 * DSIZE;
 
@@ -264,6 +265,8 @@ void mm_init(FreelistPolicy fp)
   heap_end = heap_start + DSIZE;  // Adjust heap end
 
   mm_initialized = 1;
+  mm_check();  // Debugging initial heap state
+
 
 }
 
