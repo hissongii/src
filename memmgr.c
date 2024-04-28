@@ -267,7 +267,7 @@ void mm_init(FreelistPolicy fp)
 
   // 힙 시작과 끝 설정
   heap_start = ds_heap_start + 16;  // 초기 센티넬 블록 다음
-  heap_end = ds_heap_end - 16;      // 끝 센티넬 블록 전
+  heap_end = ds_heap_brk - 16;      // 끝 센티넬 블록 전
 
   mm_initialized = 1;
 
