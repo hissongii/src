@@ -253,6 +253,7 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
+  /*
   // Extend initial heap space by a minimal operational size
   if (ds_sbrk(2 * DSIZE) == (void *)-1) {
       PANIC("Failed to extend heap.");
@@ -271,7 +272,9 @@ void mm_init(FreelistPolicy fp)
 
   // Heap is initialized
   mm_initialized = 1;
-
+  */
+  PUT(heap_start, PACK(0, 1));
+  mm_initialized = 1;
 }
 
 
