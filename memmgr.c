@@ -262,15 +262,15 @@ void mm_init(FreelistPolicy fp)
   heap_start = new_heap_segment + (4 * WSIZE);
   heap_end = new_heap_segment + initial_heap_size - (2 * WSIZE);
 
-  PUT(heap_start - (3 * WSIZE), PACK(DSIZE, 1));
-  PUT(heap_start - (2 * WSIZE), PACK(DSIZE, 1));
+  PUT(heap_start - WSIZE, PACK(DSIZE, 1));  // Prologue header
+  PUT(heap_start, PACK(DSIZE, 1));          // Prologue footer
 
   PUT(heap_end, PACK(0, 1));
-  /*
+  
   size_t free_block_size = (heap_end - heap_start);
   PUT(heap_start, PACK(free_block_size, 0));
   PUT(heap_end - WSIZE, PACK(free_block_size, 0));
-  */
+
   mm_initialized = 1;
     
 }
