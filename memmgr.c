@@ -390,6 +390,7 @@ void* mm_malloc(size_t size) {
   // 할당된 메모리의 payload 주소 반환
   return (void *)(bp + WSIZE);
 
+
 }
 
 
@@ -400,8 +401,11 @@ static void* extend_heap(size_t words) {
       return NULL;
   }
 
+  // 힙 확장에 성공하면 새로운 블록에 대한 헤더와 풋터 설정
   PUT(HDR2FTR(bp), PACK(size, FREE));
   PUT(FTR2HDR(bp + size - WSIZE), PACK(size, FREE));
+  
+  // 힙의 끝에 있는 블록의 풋터도 업데이트
   PUT(HDR2FTR(bp + size), PACK(0, ALLOC));
   return coalesce(bp);
 }
