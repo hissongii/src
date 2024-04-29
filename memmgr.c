@@ -340,15 +340,22 @@ void* mm_malloc(size_t size) {
   ///
   /// TODO
   ///
+  // 요청된 크기를 할당 가능한 최소 단위로 조정
   size_t asize = size <= DSIZE ? 2 * DSIZE : DSIZE * ((size + (DSIZE) + (DSIZE - 1)) / DSIZE);
 
-  char *bp = bf_get_free_block_implicit(asize);
+  // 적절한 크기의 free block을 찾음
+  char *bp = get_free_block(asize);
   if (bp != NULL) {
       size_t actual_size = GET_SIZE(bp);
+      // 찾은 free block을 할당하기에 충분한 크기인지 확인
       if (actual_size >= asize) {
+          // 남은 부분이 충분히 크면 분할하여 사용
           if ((actual_size - asize) >= (2 * DSIZE)) {
+              // 할당된 부분 헤더와 풋터 설정
               PUT(bp, PACK(asize, ALLOC));
               PUT(HDR2FTR(bp), PACK(asize, ALLOC));
+              
+              // 남은 부분에 대한 헤더와 풋터 설정
               bp = NEXT_PTR(bp + asize);
               char *footer_pos = HDR2FTR(bp);
               if ((char *)footer_pos < (char *)heap_end) {
@@ -360,21 +367,27 @@ void* mm_malloc(size_t size) {
                   return NULL;
               }
           } else {
+              // 남은 부분이 충분히 크지 않으면 그대로 사용
               PUT(bp, PACK(actual_size, ALLOC));
               PUT(HDR2FTR(bp), PACK(actual_size, ALLOC));
           }
+          // 할당된 메모리의 payload 주소 반환
           return (void *)(bp + WSIZE);
       }
   }
 
+  // 적절한 free block을 찾지 못했을 경우 힙을 확장하여 새로운 free block 생성
   size_t extendsize = MAX(asize, CHUNKSIZE);
   bp = extend_heap(extendsize / WSIZE);
   if (bp == NULL) {
       return NULL;
   }
 
+  // 새로운 free block에 대한 헤더와 풋터 설정
   PUT(bp, PACK(asize, ALLOC));
   PUT(HDR2FTR(bp), PACK(asize, ALLOC));
+
+  // 할당된 메모리의 payload 주소 반환
   return (void *)(bp + WSIZE);
 
 }
