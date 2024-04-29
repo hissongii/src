@@ -253,28 +253,8 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
-  /*
-  // Initialize heap
-  size_t initial_heap_size = 2 * PAGESIZE;  // Adjust the size according to actual use
-  void *extend_result = ds_sbrk(initial_heap_size);
-  if (extend_result == (void *)-1) {
-    PANIC("Failed to extend heap.");
-  }
-
-  heap_start = ds_heap_start + DSIZE;  // Adjust for initial padding
-  heap_end = ds_heap_start + initial_heap_size - DSIZE;  // Adjust for end padding
-
-  // Set up initial sentinel block at start and end of the heap
-  PUT(heap_start - WSIZE, PACK(DSIZE, 1));  // Sentinel header at the start
-  PUT(heap_start, PACK(DSIZE, 1));  // Sentinel footer immediately following the header
-
-  PUT(heap_end, PACK(0, 1));  // Sentinel footer at the end
-  PUT(heap_end - WSIZE, PACK(0, 1));  // Sentinel header immediately before the footer
-
-  mm_initialized = 1;
-  */
   // Initialize the heap
-  size_t initial_heap_size = CHUNKSIZE;
+  size_t initial_heap_size = CHUNKSIZE*2;
   if (ds_sbrk(initial_heap_size) == (void *)-1) {
       PANIC("Failed to extend heap.");
   }
