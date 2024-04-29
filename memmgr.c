@@ -260,8 +260,8 @@ void mm_init(FreelistPolicy fp)
   }
 
   // Adjust the heap start to include padding and prologue block
-  heap_start = ds_heap_start + DSIZE;
-  heap_end = ds_heap_start + initial_heap_size - DSIZE;
+  heap_start = ds_heap_start + (2 * WSIZE);  // Adjust to account for prologue block overhead
+  heap_end = ds_heap_start + initial_heap_size - WSIZE;  // Adjust for end of heap
 
   // Setup initial sentinel blocks at the start and end of the heap
   PUT(heap_start - WSIZE, PACK(0, 1));  // Prologue header with size 0 and allocated
@@ -269,10 +269,11 @@ void mm_init(FreelistPolicy fp)
   PUT(heap_end, PACK(0, 1));            // Epilogue header with size 0 and allocated
 
   // After initializing the sentinel blocks, you need to setup the first free block
-  PUT(heap_start + WSIZE, PACK(initial_heap_size - (4 * WSIZE), 1));  // Header of first free block
-  PUT(heap_end - WSIZE, PACK(initial_heap_size - (4 * WSIZE), 1));  // Footer of first free block
+  size_t free_block_size = initial_heap_size - (4 * WSIZE);  // Compute the actual size of the first free block
+  PUT(heap_start + WSIZE, PACK(free_block_size, 0));  // Header of first free block
+  PUT(heap_start + WSIZE + free_block_size - WSIZE, PACK(free_block_size, 0));  // Footer of first free block
 
-  mm_initialized = 1;
+  mm_initialized = 1;  // Heap initialization completed
 
 }
 
