@@ -288,24 +288,16 @@ static void* bf_get_free_block_implicit(size_t size)
   //
   // TODO
   //
-  /*
-  char *bp;
-  void *best_fit = NULL;
-  size_t smallest_diff = ~0;
-  
-  for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
-    if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp)) >= size)) {
-      size_t diff = GET_SIZE(HDRP(bp)) - size;
-      if (diff < smallest_diff) {
-        best_fit = bp;
-        smallest_diff = diff;
+  char *bp = heap_start;
+  while (bp < heap_end) {
+      size_t block_size = GET_SIZE(HDR2FTR(bp));
+      if (!GET_STATUS(HDR2FTR(bp)) && (block_size >= size)) {
+          return bp;
       }
-    }
+      bp = NEXT_PTR(bp + block_size);
   }
-
-  return best_fit;
-  */
   return NULL;
+
 }
 
 
@@ -322,24 +314,16 @@ static void* bf_get_free_block_explicit(size_t size)
   //
   // TODO
   //
-  /*
-  char *bp;
-  void *best_fit = NULL;
-  size_t smallest_diff = ~0;
-  
-  for (bp = heap_list; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
-    if (!GET_ALLOC(HDRP(bp)) && (GET_SIZE(HDRP(bp)) >= size)) {
-      size_t diff = GET_SIZE(HDRP(bp)) - size;
-      if (diff < smallest_diff) {
-        best_fit = bp;
-        smallest_diff = diff;
+  char *bp = heap_start;
+  while (bp != NULL) {
+      size_t block_size = GET_SIZE(HDR2FTR(bp));
+      if (block_size >= size) {
+          return bp;
       }
-    }
+      bp = NEXT_LIST_GET(bp);
   }
-
-  return best_fit;
-  */
   return NULL;
+
 }
 
 
