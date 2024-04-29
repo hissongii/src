@@ -345,16 +345,19 @@ void* mm_malloc(size_t size) {
   char *bp = bf_get_free_block_implicit(asize);
   if (bp != NULL) {
       size_t actual_size = GET_SIZE(bp);
-      if (actual_size >= asize) { // Ensure actual_size is sufficient
+      if (actual_size >= asize) {
           if ((actual_size - asize) >= (2 * DSIZE)) {
               PUT(bp, PACK(asize, ALLOC));
               PUT(HDR2FTR(bp), PACK(asize, ALLOC));
               bp = NEXT_PTR(bp + asize);
-              if ((char *)HDR2FTR(bp) < (char *)heap_end) { // Check if within heap bounds
+              char *footer_pos = HDR2FTR(bp);
+              if ((char *)footer_pos < (char *)heap_end) {
                   PUT(bp, PACK(actual_size - asize, FREE));
-                  PUT(HDR2FTR(bp), PACK(actual_size - asize, FREE));
+                  PUT(footer_pos, PACK(actual_size - asize, FREE));
               } else {
-                  LOG(1, "Error: Attempt to write footer beyond heap end");
+                  // 주소가 힙의 끝을 넘어가면, 로그를 남기고 오류 처리
+                  LOG(1, "Attempting to write beyond heap end at %p", footer_pos);
+                  return NULL;
               }
           } else {
               PUT(bp, PACK(actual_size, ALLOC));
@@ -372,11 +375,6 @@ void* mm_malloc(size_t size) {
 
   PUT(bp, PACK(asize, ALLOC));
   PUT(HDR2FTR(bp), PACK(asize, ALLOC));
-  char *next_bp = bp + asize;
-  if (next_bp + DSIZE <= (char *)heap_end) {
-      PUT(next_bp, PACK(extendsize - asize, FREE));
-      PUT(HDR2FTR(next_bp), PACK(extendsize - asize, FREE));
-  }
   return (void *)(bp + WSIZE);
 
 }
