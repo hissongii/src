@@ -292,12 +292,15 @@ static void* bf_get_free_block_implicit(size_t size)
   // TODO
   //
   char *bp = heap_start;
-  while (bp < heap_end) {
-      size_t block_size = GET_SIZE(HDR2FTR(bp));
-      if (!GET_STATUS(HDR2FTR(bp)) && (block_size >= size)) {
+  while ((char *)bp < (char *)heap_end) {
+      size_t block_size = GET_SIZE(bp);
+      if (!GET_STATUS(bp) && (block_size >= size)) {
           return bp;
       }
       bp = NEXT_PTR(bp + block_size);
+      if ((char *)bp >= (char *)heap_end) {
+          break;
+      }
   }
   return NULL;
 
