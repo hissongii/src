@@ -273,77 +273,26 @@ void mm_init(FreelistPolicy fp)
 
   mm_initialized = 1;
   */
-  if ((heap_start = ds_sbrk(4*WSIZE)) == (void *)-1) {  // heap_listp가 힙의 최댓값 이상을 요청한다면 fail
-      return -1;
+  // Initialize the heap
+  size_t initial_heap_size = CHUNKSIZE;
+  if (ds_sbrk(initial_heap_size) == (void *)-1) {
+      PANIC("Failed to extend heap.");
   }
 
-  PUT(heap_start, 0);                             // Alignment padding
-  PUT(heap_start + (1*WSIZE), PACK(DSIZE, 1));    // Prologue header
-  PUT(heap_start + (2*WSIZE), PACK(DSIZE, 1));    // Prologue footer
-  PUT(heap_start + (3*WSIZE), PACK(0, 1));        // Epilogue header
-  heap_start += (2*WSIZE);
+  // Adjust the heap start to include padding and prologue block
+  heap_start = ds_heap_start + DSIZE;
+  heap_end = ds_heap_start + initial_heap_size - DSIZE;
 
-  // Extend the empty heap with a free block of CHUNKSIZE bytes
-  if (extend_heap(CHUNKSIZE/WSIZE) == NULL) {
-      return -1;
-  }
-  heap_end = (char *)heap_start;
+  // Setup initial sentinel blocks at the start and end of the heap
+  PUT(heap_start - WSIZE, PACK(DSIZE, 1));  // Prologue header
+  PUT(heap_start, PACK(DSIZE, 1));          // Prologue footer
+  PUT(heap_end, PACK(0, 1));                // Epilogue header
+  PUT(heap_end - WSIZE, PACK(0, 1));        // Optional: if heap_end is designed to have a footer
+
   mm_initialized = 1;
 
 }
 
-static void *extend_heap(size_t words) {
-    char *bp;
-    size_t size;
-
-    size = (words % 2) ? (words+1) * WSIZE : words * WSIZE;
-    if ((long)(bp = ds_sbrk(size)) == -1) {
-        return NULL;
-    }
-
-    PUT(HDRP(bp), PACK(size, 0));
-    PUT(FTRP(bp), PACK(size, 0));
-    PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1));
-
-    return coalesce(bp);
-}
-
-static void *coalesce(void *bp) {
-    size_t prev_alloc = GET_ALLOC(FTRP(PREV_BLKP(bp)));
-    size_t next_alloc = GET_ALLOC(HDRP(NEXT_BLKP(bp)));
-    size_t size = GET_SIZE(HDRP(bp));
-
-    // case1: 앞, 뒤 블록 모두 할당되어 있을 때
-    if (prev_alloc && next_alloc) {
-        heap_end = bp;
-        return bp;
-    }
-
-    // case2: 앞 블록 할당, 뒷 블록 가용
-    else if (prev_alloc && !next_alloc) {
-        size += GET_SIZE(HDRP(NEXT_BLKP(bp)));
-        PUT(HDRP(bp), PACK(size, 0));
-        PUT(FTRP(bp), PACK(size, 0));
-    }
-
-    // case3: 앞 블록 가용, 뒷 블록 할당
-    else if (!prev_alloc && next_alloc) {
-        size += GET_SIZE(HDRP(PREV_BLKP(bp)));
-        PUT(FTRP(bp), PACK(size, 0));
-        PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
-        bp = PREV_BLKP(bp);
-    }
-
-    // case4: 앞, 뒤 블록 모두 가용
-    else {
-        size += GET_SIZE(HDRP(PREV_BLKP(bp))) + GET_SIZE(FTRP(NEXT_BLKP(bp)));
-        PUT(HDRP(PREV_BLKP(bp)), PACK(size, 0));
-        PUT(FTRP(NEXT_BLKP(bp)), PACK(size, 0));
-        bp = PREV_BLKP(bp);
-    }
-    heap_end = bp;
-    return bp;
-} 
 
 /// @brief find and return a free block of at least @a size bytes (best fit)
 /// @param size size of block (including header & footer tags), in bytes
