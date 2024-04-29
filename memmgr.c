@@ -336,18 +336,102 @@ void* mm_malloc(size_t size)
   //
   // TODO
   //
-  /*
-  size_t newsize = ALIGN(size + SIZE_T_SIZE);
-  void *bp = bf_get_free_block_implicit(newsize);
 
-  if (bp != NULL) {
-    place(bp, newsize);
-    return bp;
+  // Adjust block size to include overhead and alignment reqs.
+  size_t asize; // Adjusted block size
+  if (size <= DSIZE) {
+      asize = 2 * DSIZE; // Minimum block size
+  } else {
+      asize = DSIZE * ((size + (DSIZE) + (DSIZE-1)) / DSIZE);
   }
-  */
-  return NULL;
+
+  // Search the free list for a fit
+  char *bp = bf_get_free_block_implicit(asize);
+  if (bp != NULL) {
+      size_t actual_size = GET_SIZE(bp);
+      // If block is too large, split it
+      if ((actual_size - asize) >= (2 * DSIZE)) {
+          PUT(bp, PACK(asize, ALLOC));
+          PUT(HDR2FTR(bp), PACK(asize, ALLOC));
+          bp = NEXT_PTR(bp + asize);
+          PUT(bp, PACK(actual_size - asize, FREE));
+          PUT(HDR2FTR(bp), PACK(actual_size - asize, FREE));
+      } else {
+          // Use the block as is
+          PUT(bp, PACK(actual_size, ALLOC));
+          PUT(HDR2FTR(bp), PACK(actual_size, ALLOC));
+      }
+      return (void *)(bp + WSIZE);
+  }
+
+  // No fit found. Get more memory and place the block
+  size_t extendsize = MAX(asize, CHUNKSIZE);
+  bp = extend_heap(extendsize / WSIZE);
+  if (bp == NULL) {
+      return NULL; // extend_heap failed
+  }
+
+  // Place the block
+  PUT(bp, PACK(asize, ALLOC));
+  PUT(HDR2FTR(bp), PACK(asize, ALLOC));
+  PUT(bp + asize, PACK(extendsize - asize, FREE));
+  PUT(HDR2FTR(bp + asize), PACK(extendsize - asize, FREE));
+
+  return (void *)(bp + WSIZE);
+
 }
 
+static void* extend_heap(size_t words) {
+  char *bp;
+  size_t size;
+
+  // Allocate an even number of words to maintain alignment
+  size = (words % 2) ? (words + 1) * WSIZE : words * WSIZE;
+  if ((bp = ds_sbrk(size)) == (void *)-1) {
+      return NULL;
+  }
+
+  // Initialize free block header/footer and the epilogue header
+  PUT(HDR2FTR(bp), PACK(size, FREE)); // Free block header
+  PUT(FTR2HDR(bp + size - WSIZE), PACK(size, FREE)); // Free block footer
+  PUT(HDR2FTR(bp + size), PACK(0, ALLOC)); // New epilogue header
+
+  // Coalesce if the previous block was free
+  return coalesce(bp);
+}
+
+static void* coalesce(void *bp) {
+  size_t prev_alloc = GET_STATUS(FTR2HDR(PREV_PTR(bp)));
+  size_t next_alloc = GET_STATUS(HDR2FTR(NEXT_PTR(bp)));
+  size_t size = GET_SIZE(HDR2FTR(bp));
+
+  if (prev_alloc && next_alloc) { // Case 1
+      return bp;
+  }
+
+  else if (prev_alloc && !next_alloc) { // Case 2
+      size += GET_SIZE(HDR2FTR(NEXT_PTR(bp)));
+      PUT(HDR2FTR(bp), PACK(size, FREE));
+      PUT(FTR2HDR(bp + size - WSIZE), PACK(size, FREE));
+  }
+
+  else if (!prev_alloc && next_alloc) { // Case 3
+      size += GET_SIZE(HDR2FTR(PREV_PTR(bp)));
+      PUT(FTR2HDR(PREV_PTR(bp)), PACK(size, FREE));
+      PUT(HDR2FTR(bp), PACK(size, FREE));
+      bp = PREV_PTR(bp);
+  }
+
+  else { // Case 4
+      size += GET_SIZE(HDR2FTR(PREV_PTR(bp))) +
+              GET_SIZE(HDR2FTR(NEXT_PTR(bp)));
+      PUT(FTR2HDR(PREV_PTR(bp)), PACK(size, FREE));
+      PUT(FTR2HDR(bp + size - WSIZE), PACK(size, FREE));
+      bp = PREV_PTR(bp);
+  }
+
+  return bp;
+}
 
 void* mm_calloc(size_t nmemb, size_t size)
 {
