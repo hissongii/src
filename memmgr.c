@@ -253,6 +253,7 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
+  // Initialize the heap
   size_t initial_heap_size = CHUNKSIZE;
   void* new_heap_segment = ds_sbrk(initial_heap_size);
   if (new_heap_segment == (void *)-1) {
@@ -260,21 +261,22 @@ void mm_init(FreelistPolicy fp)
   }
 
   // Set heap start and end
-  heap_start = new_heap_segment + DSIZE; // Start after prologue block
-  heap_end = new_heap_segment + initial_heap_size - DSIZE; // End before epilogue block
+  heap_start = new_heap_segment + (4 * WSIZE); // Start after prologue block and alignment padding
+  heap_end = new_heap_segment + initial_heap_size - (2 * WSIZE); // End before epilogue block
 
   // Set prologue and epilogue
-  PUT(heap_start - WSIZE, PACK(DSIZE, 1)); // Prologue header
-  PUT(heap_start, PACK(DSIZE, 1)); // Prologue footer
+  PUT(heap_start - (3 * WSIZE), PACK(DSIZE, 1)); // Prologue header
+  PUT(heap_start - (2 * WSIZE), PACK(DSIZE, 1)); // Prologue footer
+
   PUT(heap_end, PACK(0, 1)); // Epilogue header
 
   // Set the first free block
-  size_t free_block_size = (heap_end - heap_start) - DSIZE;
-  PUT(heap_start + DSIZE, PACK(free_block_size, 0)); // Free block header
+  size_t free_block_size = (heap_end - heap_start);
+  PUT(heap_start, PACK(free_block_size, 0)); // Free block header
   PUT(heap_end - WSIZE, PACK(free_block_size, 0)); // Free block footer
 
   mm_initialized = 1; // Mark heap as initialized
-  
+    
 }
 
 
