@@ -253,6 +253,7 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
+  /*
   // Initialize heap
   size_t initial_heap_size = 2 * PAGESIZE;  // Adjust the size according to actual use
   void *extend_result = ds_sbrk(initial_heap_size);
@@ -271,7 +272,24 @@ void mm_init(FreelistPolicy fp)
   PUT(heap_end - WSIZE, PACK(0, 1));  // Sentinel header immediately before the footer
 
   mm_initialized = 1;
+  */
+  if ((heap_start = ds_sbrk(4*WSIZE)) == (void *)-1) {  // heap_listp가 힙의 최댓값 이상을 요청한다면 fail
+      return -1;
+  }
 
+  PUT(heap_start, 0);                             // Alignment padding
+  PUT(heap_start + (1*WSIZE), PACK(DSIZE, 1));    // Prologue header
+  PUT(heap_start + (2*WSIZE), PACK(DSIZE, 1));    // Prologue footer
+  PUT(heap_start + (3*WSIZE), PACK(0, 1));        // Epilogue header
+  heap_start += (2*WSIZE);
+
+  // Extend the empty heap with a free block of CHUNKSIZE bytes
+  if (extend_heap(CHUNKSIZE/WSIZE) == NULL) {
+      return -1;
+  }
+  heap_end = (char *)heap_start;
+  mm_initialized = 1;
+  
 }
 
 
