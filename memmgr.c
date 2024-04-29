@@ -445,14 +445,11 @@ void* mm_calloc(size_t nmemb, size_t size)
   //
   // calloc is simply malloc() followed by memset()
   //
-  /*
   void *payload = mm_malloc(nmemb * size);
 
   if (payload != NULL) memset(payload, 0, nmemb * size);
 
   return payload;
-  */
-  return NULL;
 }
 
 
