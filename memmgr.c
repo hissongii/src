@@ -381,6 +381,9 @@ void* mm_malloc(size_t size)
 
 }
 
+static void* extend_heap(size_t words);
+static void* coalesce(void *bp);
+
 static void* extend_heap(size_t words) {
   char *bp;
   size_t size;
