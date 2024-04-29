@@ -144,6 +144,12 @@ static FreelistPolicy freelist_policy  = 0;            ///< free list management
 #define DSIZE       16
 #define NEXT_LIST_GET(p)  (*(void **)(p + WSIZE))
 #define PREV_LIST_GET(p)  (*(void **)(p + 2*WSIZE))
+
+#define HEADER_SIZE sizeof(size_t)
+#define FOOTER_SIZE sizeof(size_t)
+#define MIN_BLOCK_SIZE (HEADER_SIZE + FOOTER_SIZE)
+#define PAGESIZE sysconf(_SC_PAGESIZE)
+
 /// @}
 
 
@@ -253,22 +259,31 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
-  // Initialize heap
-  size_t initial_heap_size = 2 * PAGESIZE;  // Adjust the size according to actual use
-  void *extend_result = ds_sbrk(initial_heap_size);
-  if (extend_result == (void *)-1) {
-    PANIC("Failed to extend heap.");
+  size_t initial_heap_size = PAGESIZE * 2;  // 초기 힙 크기를 페이지 크기의 2배로 설정
+
+  // 데이터 세그먼트 확장
+  ds_heap_start = mmap(NULL, initial_heap_size, PROT_READ | PROT_WRITE,
+                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  if (ds_heap_start == MAP_FAILED) {
+      perror("mmap failed");
+      exit(EXIT_FAILURE);
   }
 
-  heap_start = ds_heap_start + DSIZE;  // Adjust for initial padding
-  heap_end = ds_heap_start + initial_heap_size - DSIZE;  // Adjust for end padding
+  // 초기 힙 경계 설정
+  ds_heap_end = ds_heap_start + initial_heap_size;
+  ds_heap_brk = ds_heap_start;
 
-  // Set up initial sentinel block at start and end of the heap
-  PUT(heap_start - WSIZE, PACK(DSIZE, 1));  // Sentinel header at the start
-  PUT(heap_start, PACK(DSIZE, 1));  // Sentinel footer immediately following the header
+  // 초기 센티넬 블록 설정
+  *(size_t *)ds_heap_start = 0;  // 힙 시작 부분에 센티넬 헤더
+  *(size_t *)(ds_heap_start + HEADER_SIZE) = 0;  // 힙 시작 부분에 센티넬 풋터
 
-  PUT(heap_end, PACK(0, 1));  // Sentinel footer at the end
-  PUT(heap_end - WSIZE, PACK(0, 1));  // Sentinel header immediately before the footer
+  // 센티넬 블록으로 힙의 끝 설정
+  *(size_t *)(ds_heap_end - FOOTER_SIZE) = 0;  // 힙 끝 부분에 센티넬 풋터
+  *(size_t *)(ds_heap_end - FOOTER_SIZE - HEADER_SIZE) = 0;  // 힙 끝 부분에 센티넬 헤더
+
+  // 힙의 논리적 시작과 끝을 센티넬 블록 바로 다음으로 설정
+  heap_start = ds_heap_start + HEADER_SIZE + FOOTER_SIZE;
+  heap_end = ds_heap_end - (HEADER_SIZE + FOOTER_SIZE);
 
   mm_initialized = 1;
 
