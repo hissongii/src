@@ -254,7 +254,7 @@ void mm_init(FreelistPolicy fp)
   //
   // TODO
   // Initialize the heap
-  size_t initial_heap_size = CHUNKSIZE*2;
+  size_t initial_heap_size = CHUNKSIZE;
   if (ds_sbrk(initial_heap_size) == (void *)-1) {
       PANIC("Failed to extend heap.");
   }
@@ -264,10 +264,13 @@ void mm_init(FreelistPolicy fp)
   heap_end = ds_heap_start + initial_heap_size - DSIZE;
 
   // Setup initial sentinel blocks at the start and end of the heap
-  PUT(heap_start - WSIZE, PACK(DSIZE, 1));  // Prologue header
-  PUT(heap_start, PACK(DSIZE, 1));          // Prologue footer
-  PUT(heap_end, PACK(0, 1));                // Epilogue header
-  PUT(heap_end - WSIZE, PACK(0, 1));        // Optional: if heap_end is designed to have a footer
+  PUT(heap_start - WSIZE, PACK(0, 1));  // Prologue header with size 0 and allocated
+  PUT(heap_start, PACK(0, 1));          // Prologue footer with size 0 and allocated
+  PUT(heap_end, PACK(0, 1));            // Epilogue header with size 0 and allocated
+
+  // After initializing the sentinel blocks, you need to setup the first free block
+  PUT(heap_start + WSIZE, PACK(initial_heap_size - (4 * WSIZE), 1));  // Header of first free block
+  PUT(heap_end - WSIZE, PACK(initial_heap_size - (4 * WSIZE), 1));  // Footer of first free block
 
   mm_initialized = 1;
 
