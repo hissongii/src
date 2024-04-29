@@ -335,42 +335,37 @@ static void* bf_get_free_block_explicit(size_t size)
 
 void* mm_malloc(size_t size) {
   LOG(1, "mm_malloc(0x%lx (%lu))", size, size);
+
   assert(mm_initialized);
 
-  size_t asize; // Adjusted block size
-  if (size <= DSIZE) {
-      asize = 2 * DSIZE; // Minimum block size
-  } else {
-      asize = DSIZE * ((size + (DSIZE) + (DSIZE-1)) / DSIZE);
+  if (size == 0) {
+      return NULL;
   }
+
+  size_t asize = MAX(ALIGN(size) + DSIZE, MINBLOCKSIZE);
 
   char *bp = bf_get_free_block_implicit(asize);
   if (bp != NULL) {
       size_t actual_size = GET_SIZE(bp);
-      if ((actual_size - asize) >= (2 * DSIZE)) {
+      // Block splitting
+      if ((actual_size - asize) >= MINBLOCKSIZE) {
           PUT(bp, PACK(asize, ALLOC));
-          PUT(HDR2FTR(bp), PACK(asize, ALLOC));
-          bp = NEXT_PTR(bp + asize);
-          PUT(bp, PACK(actual_size - asize, FREE));
-          PUT(HDR2FTR(bp), PACK(actual_size - asize, FREE));
+          PUT(bp + asize, PACK(actual_size - asize, FREE));  // Correctly set next block
+          PUT(FTR(bp + asize), PACK(actual_size - asize, FREE));  // Set footer of new free block
       } else {
           PUT(bp, PACK(actual_size, ALLOC));
-          PUT(HDR2FTR(bp), PACK(actual_size, ALLOC));
       }
-      return (void *)(bp + WSIZE);
+      return bp + WSIZE;
   }
 
   size_t extendsize = MAX(asize, CHUNKSIZE);
-  bp = extend_heap(extendsize / WSIZE);
-  if (bp == NULL) {
-      return NULL;
+  if ((bp = extend_heap(extendsize / WSIZE)) != NULL) {
+      PUT(bp, PACK(asize, ALLOC));
+      PUT(FTR(bp), PACK(asize, ALLOC));
+      return bp + WSIZE;
   }
 
-  PUT(bp, PACK(asize, ALLOC));
-  PUT(HDR2FTR(bp), PACK(asize, ALLOC));
-  PUT(bp + asize, PACK(extendsize - asize, FREE));
-  PUT(HDR2FTR(bp + asize), PACK(extendsize - asize, FREE));
-  return (void *)(bp + WSIZE);
+  return NULL; // extend_heap failed or no space available
 }
 
 
