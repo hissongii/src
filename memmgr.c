@@ -341,27 +341,27 @@ void* mm_malloc(size_t size) {
   /// TODO
   ///
   size_t asize = size <= DSIZE ? 2 * DSIZE : DSIZE * ((size + (DSIZE) + (DSIZE - 1)) / DSIZE);
+
   char *bp = bf_get_free_block_implicit(asize);
   if (bp != NULL) {
       size_t actual_size = GET_SIZE(bp);
-
-      if ((actual_size - asize) >= (2 * DSIZE)) {
-        PUT(bp, PACK(asize, ALLOC));
-        PUT(HDR2FTR(bp), PACK(asize, ALLOC));
-        bp = NEXT_PTR(bp + asize);
-        if ((char *)HDR2FTR(bp) < (char *)heap_end) {
-          PUT(bp, PACK(actual_size - asize, FREE));
-          PUT(HDR2FTR(bp), PACK(actual_size - asize, FREE));
-        } else {
-          // 힙 경계를 벗어나므로 오류 처리
-          LOG(1, "Error: Footer would be beyond heap end");
-        }
-      } else {
-        PUT(bp, PACK(actual_size, ALLOC));
-        PUT(HDR2FTR(bp), PACK(actual_size, ALLOC));
+      if (actual_size >= asize) { // Ensure actual_size is sufficient
+          if ((actual_size - asize) >= (2 * DSIZE)) {
+              PUT(bp, PACK(asize, ALLOC));
+              PUT(HDR2FTR(bp), PACK(asize, ALLOC));
+              bp = NEXT_PTR(bp + asize);
+              if ((char *)HDR2FTR(bp) < (char *)heap_end) { // Check if within heap bounds
+                  PUT(bp, PACK(actual_size - asize, FREE));
+                  PUT(HDR2FTR(bp), PACK(actual_size - asize, FREE));
+              } else {
+                  LOG(1, "Error: Attempt to write footer beyond heap end");
+              }
+          } else {
+              PUT(bp, PACK(actual_size, ALLOC));
+              PUT(HDR2FTR(bp), PACK(actual_size, ALLOC));
+          }
+          return (void *)(bp + WSIZE);
       }
-      
-      return (void *)(bp + WSIZE);
   }
 
   size_t extendsize = MAX(asize, CHUNKSIZE);
