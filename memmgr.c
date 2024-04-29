@@ -297,13 +297,13 @@ static void* bf_get_free_block_implicit(size_t size)
       if (!GET_STATUS(bp) && (block_size >= size)) {
           return bp;
       }
-      bp = NEXT_PTR(bp + block_size);
-      if ((char *)bp >= (char *)heap_end) {
-          break;
+      char *next_bp = NEXT_PTR(bp + block_size);
+      if (next_bp >= (char *)heap_end) {
+          break;  // Prevent moving beyond heap end
       }
+      bp = next_bp;
   }
   return NULL;
-
 }
 
 
@@ -335,37 +335,42 @@ static void* bf_get_free_block_explicit(size_t size)
 
 void* mm_malloc(size_t size) {
   LOG(1, "mm_malloc(0x%lx (%lu))", size, size);
-
   assert(mm_initialized);
 
-  if (size == 0) {
-      return NULL;
-  }
-
-  size_t asize = MAX(ALIGN(size) + DSIZE, MINBLOCKSIZE);
-
+  size_t asize = size <= DSIZE ? 2 * DSIZE : DSIZE * ((size + (DSIZE) + (DSIZE - 1)) / DSIZE);
   char *bp = bf_get_free_block_implicit(asize);
   if (bp != NULL) {
       size_t actual_size = GET_SIZE(bp);
-      // Block splitting
-      if ((actual_size - asize) >= MINBLOCKSIZE) {
+      if ((actual_size - asize) >= (2 * DSIZE)) {
           PUT(bp, PACK(asize, ALLOC));
-          PUT(bp + asize, PACK(actual_size - asize, FREE));  // Correctly set next block
-          PUT(FTR(bp + asize), PACK(actual_size - asize, FREE));  // Set footer of new free block
+          PUT(HDR2FTR(bp), PACK(asize, ALLOC));
+          bp = NEXT_PTR(bp + asize);
+          if ((char *)bp + DSIZE <= (char *)heap_end) {
+              PUT(bp, PACK(actual_size - asize, FREE));
+              PUT(HDR2FTR(bp), PACK(actual_size - asize, FREE));
+          }
       } else {
           PUT(bp, PACK(actual_size, ALLOC));
+          PUT(HDR2FTR(bp), PACK(actual_size, ALLOC));
       }
-      return bp + WSIZE;
+      return (void *)(bp + WSIZE);
   }
 
   size_t extendsize = MAX(asize, CHUNKSIZE);
-  if ((bp = extend_heap(extendsize / WSIZE)) != NULL) {
-      PUT(bp, PACK(asize, ALLOC));
-      PUT(FTR(bp), PACK(asize, ALLOC));
-      return bp + WSIZE;
+  bp = extend_heap(extendsize / WSIZE);
+  if (bp == NULL) {
+      return NULL;
   }
 
-  return NULL; // extend_heap failed or no space available
+  PUT(bp, PACK(asize, ALLOC));
+  PUT(HDR2FTR(bp), PACK(asize, ALLOC));
+  char *next_bp = bp + asize;
+  if (next_bp + DSIZE <= (char *)heap_end) {
+      PUT(next_bp, PACK(extendsize - asize, FREE));
+      PUT(HDR2FTR(next_bp), PACK(extendsize - asize, FREE));
+  }
+  return (void *)(bp + WSIZE);
+
 }
 
 
