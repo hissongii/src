@@ -256,6 +256,7 @@ void mm_init(FreelistPolicy fp)
   // initialize heap
   //
   // TODO
+  /*
   size_t initial_heap_size = CHUNKSIZE;
   void* new_heap_segment = ds_sbrk(initial_heap_size);
   if (new_heap_segment == (void *)-1) {
@@ -264,6 +265,17 @@ void mm_init(FreelistPolicy fp)
 
   heap_start = new_heap_segment + (4 * WSIZE);
   heap_end = new_heap_segment + initial_heap_size - (2 * WSIZE);
+  */
+  void *initial_mem = ds_sbrk(CHUNKSIZE); // 초기 메모리 할당
+
+  if (initial_mem == (void *)-1) {
+      heap_start = NULL;
+      heap_end = NULL;
+      return;
+  }
+
+  heap_start = initial_mem;
+  heap_end = (char *)initial_mem + CHUNKSIZE;
 
   PUT(heap_start - WSIZE, PACK(0, 1));
   PUT(heap_start, PACK(0, 1));
@@ -274,7 +286,8 @@ void mm_init(FreelistPolicy fp)
   PUT(heap_end - WSIZE, PACK(free_block_size, 0));
 
   mm_initialized = 1;
-    
+
+
 }
 
 
